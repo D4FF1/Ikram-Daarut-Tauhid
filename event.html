@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Event dan Kegiatan IKRAM - Ikatan Remaja Masjid Rahmatan lil Alamin">
+    <title>Event - IKRAM Organization</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="assets/css/events.css">
+</head>
+<body>
+    <!-- Scroll Progress Bar -->
+    <div id="scrollProgress" class="scroll-progress"></div>
+
+<!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+        <div class="nav-logo">
+        <span style="color: #4A6D2C;">IKRAM</span>
+            <div class="logo-group">
+                <img src="assets/icon/Artboard1_3.png" alt="">
+                <img src="assets/icon/logo dti.png" alt="">
+                <img src="assets/icon/LOGO IKRAM (resolusi kecil).png" alt="">
+            </div>
+        </div>
+            
+            <div class="nav-menu" id="navMenu">
+                <a href="index.html" class="nav-link">Beranda</a>
+                <a href="index.html#about" class="nav-link scroll-link">Tentang</a>
+                <a href="event.html" class="nav-link active">Event</a>
+                <a href="article.html" class="nav-link">Artikel</a>
+                <a href="contact.html" class="nav-link">Kontak</a>
+                <a href="contact.html" class="nav-link btn-join">Bergabung</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="page-header-content" data-aos="fade-up">
+            <h1>Event & Kegiatan</h1>
+            <p>Jelajahi berbagai event, seminar, dan kegiatan menarik dari IKRAM</p>
+        </div>
+    </section>
+
+    <!-- Event Filter -->
+    <section class="events-section">
+        <div class="container">
+            <div class="filter-container" data-aos="fade-up">
+                <h3>Kategori Event</h3>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">Semua Event</button>
+                    <button class="filter-btn" data-filter="workshop">Workshop</button>
+                    <button class="filter-btn" data-filter="seminar">Seminar</button>
+                    <button class="filter-btn" data-filter="outing">Outing</button>
+                    <button class="filter-btn" data-filter="kompetisi">Kompetisi</button>
+                </div>
+            </div>
+
+            <!-- Events Grid -->
+            <div class="events-grid">
+                <!-- Event 1 -->
+                <div class="event-card" data-category="workshop" data-aos="fade-up">
+                    <div class="event-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <span class="event-category">Workshop</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">25</span>
+                            <span class="date-month">JUN</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Workshop Leadership & Public Speaking</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Aula Utama IKRAM, Jakarta
+                        </p>
+                        <p class="event-description">Tingkatkan skill kepemimpinan dan kemampuan berbicara di depan publik bersama mentor profesional dari industri. Sesi interaktif dengan simulasi real-world.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 150 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 2 -->
+                <div class="event-card" data-category="seminar" data-aos="fade-up" data-aos-delay="100">
+                    <div class="event-image" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <span class="event-category">Seminar</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">10</span>
+                            <span class="date-month">JUL</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Seminar Industri 4.0 & Entrepreneurship</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Gedung Serbaguna, Jakarta
+                        </p>
+                        <p class="event-description">Menghadirkan pembicara dari startup terkemuka untuk membagikan insight tentang dunia startup, inovasi, dan strategi bisnis di era digital.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 300 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 3 -->
+                <div class="event-card" data-category="outing" data-aos="fade-up" data-aos-delay="200">
+                    <div class="event-image" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <span class="event-category">Outing</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">20</span>
+                            <span class="date-month">JUL</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Team Building & Outing IKRAM</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Puncak, Bogor
+                        </p>
+                        <p class="event-description">Acara gathering untuk mempererat hubungan antar divisi dan merayakan pencapaian bersama. Aktivitas out-bound, games, dan quality time.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 500 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 4 -->
+                <div class="event-card" data-category="seminar" data-aos="fade-up" data-aos-delay="300">
+                    <div class="event-image" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <span class="event-category">Seminar</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">05</span>
+                            <span class="date-month">AGU</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Seminar Digital Marketing & Personal Branding</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Conference Room, Jakarta
+                        </p>
+                        <p class="event-description">Pelajari strategi digital marketing terkini dan cara membangun personal branding yang kuat di era media sosial dan digital.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 200 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 5 -->
+                <div class="event-card" data-category="workshop" data-aos="fade-up" data-aos-delay="400">
+                    <div class="event-image" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                        <span class="event-category">Workshop</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">15</span>
+                            <span class="date-month">AGU</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Workshop Design Thinking & Innovation</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Studio Kreatif, Jakarta
+                        </p>
+                        <p class="event-description">Workshop intensif tentang metodologi design thinking untuk menciptakan solusi inovatif terhadap berbagai permasalahan di masyarakat.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 100 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 6 -->
+                <div class="event-card" data-category="kompetisi" data-aos="fade-up" data-aos-delay="500">
+                    <div class="event-image" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                        <span class="event-category">Kompetisi</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">01</span>
+                            <span class="date-month">SEP</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>IKRAM Debate Competition 2024</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Auditorium Utama, Jakarta
+                        </p>
+                        <p class="event-description">Kompetisi debat antar divisi dan institusi dengan tema-tema kontroversial yang relevan dengan isu sosial dan pendidikan terkini.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 250 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 7 -->
+                <div class="event-card" data-category="workshop" data-aos="fade-up" data-aos-delay="600">
+                    <div class="event-image" style="background: linear-gradient(135deg, #f5af19 0%, #f12711 100%);">
+                        <span class="event-category">Workshop</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">10</span>
+                            <span class="date-month">SEP</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Workshop Project Management & Agile Methods</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Meeting Room, Jakarta
+                        </p>
+                        <p class="event-description">Pelajari metodologi project management modern dan agile untuk mengelola proyek organisasi dengan efisien dan efektif.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 120 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 8 -->
+                <div class="event-card" data-category="seminar" data-aos="fade-up" data-aos-delay="700">
+                    <div class="event-image" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <span class="event-category">Seminar</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">20</span>
+                            <span class="date-month">SEP</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>Seminar Career Development & Networking</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Convention Hall, Jakarta
+                        </p>
+                        <p class="event-description">Kesempatan networking dengan profesional dan perusahaan besar, serta pembahasan strategi pengembangan karir yang tepat.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 400 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event 9 -->
+                <div class="event-card" data-category="kompetisi" data-aos="fade-up" data-aos-delay="800">
+                    <div class="event-image" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                        <span class="event-category">Kompetisi</span>
+                        <div class="event-date-badge">
+                            <span class="date-day">05</span>
+                            <span class="date-month">OKT</span>
+                        </div>
+                    </div>
+                    <div class="event-content">
+                        <h3>IKRAM Innovation Challenge</h3>
+                        <p class="event-meta">
+                            <i class="fas fa-map-marker-alt"></i> Innovation Hub, Jakarta
+                        </p>
+                        <p class="event-description">Kompetisi inovasi dengan hadiah menarik untuk ide-ide terbaik dalam mengembangkan solusi sosial dan teknologi.</p>
+                        <div class="event-footer">
+                            <span class="event-attendees">
+                                <i class="fas fa-users"></i> 180 Peserta
+                            </span>
+                            <button class="btn btn-primary btn-sm">Daftar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content" data-aos="zoom-in">
+                <h2>Jangan Lewatkan Event Kami</h2>
+                <p>Follow media sosial kami untuk mendapatkan informasi terbaru tentang event dan kegiatan IKRAM</p>
+                <div class="social-links-cta">
+                    <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-icon"><i class="fab fa-tiktok"></i></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>IKRAM</h3>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Menu</h4>
+                    <ul>
+                        <li><a href="index.html">Beranda</a></li>
+                        <li><a href="index.html#about">Tentang</a></li>
+                        <li><a href="event.html">Event</a></li>
+                        <li><a href="article.html">Artikel</a></li>
+                        <li><a href="contact.html">Kontak</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Divisi</h4>
+                    <ul>
+                        <li><a href="#">Ketua</a></li>
+                        <li><a href="#">Wakil</a></li>
+                        <li><a href="#">Idaarah</a></li>
+                        <li><a href="#">Baitul Maal</a></li>
+                        <li><a href="#">Nadzofah</a></li>
+                        <li><a href="#">I'lam</a></li>
+                        <li><a href="#">Riayah</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-section">
+                    <h4>Kontak</h4>
+                    <ul>
+                        <li><i class="fas fa-map-marker-alt"></i> Jl. Cigugur Girang No.33, Cigugur Girang, Kec. Parongpong, Kabupaten Bandung Barat, Jawa Barat 40559</li>
+                        <li><i class="fas fa-phone"></i> +62 812 3456 7890</li>
+                        <li><i class="fas fa-envelope"></i> info@ikram.org</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <p>&copy; 2026 IKRAM - Ikatan Remaja Masjid Rahmatan lil Alamin. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to Top Button -->
+    <button id="backToTop" class="back-to-top" title="Back to Top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script src="assets/js/script.js"></script>
+    <script src="assets/js/events.js"></script>
+</body>
+</html>

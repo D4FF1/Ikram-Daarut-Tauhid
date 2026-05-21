@@ -1,0 +1,384 @@
+/* ============================================
+   PAGE HEADER
+   ============================================ */
+        /* Page Header - DIPERBAIKI agar tidak tertutup navbar */
+        .page-header {
+            padding: 120px 2rem 60px;
+            background: linear-gradient(135deg, #4A6D2C15 0%, #B79A6715 100%);
+            text-align: center;
+            position: relative;
+            margin-top: 0;
+        }
+
+        .page-header-content h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #4A6D2C, #B79A67);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 1rem;
+        }
+
+        .page-header-content p {
+            font-size: 1.1rem;
+            color: #4b5563;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+/* ============================================
+   EVENTS SECTION
+   ============================================ */
+.events-section {
+    padding: var(--spacing-2xl) var(--spacing-lg);
+}
+
+.filter-container {
+    text-align: center;
+    margin-bottom: var(--spacing-2xl);
+}
+
+.filter-container h3 {
+    font-size: 1.5rem;
+    margin-bottom: var(--spacing-lg);
+    color: var(--text-primary);
+}
+
+.filter-buttons {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    padding: 0.75rem 1.5rem;
+    border: 2px solid var(--border-color);
+    background: transparent;
+    color: var(--text-primary);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    font-size: 1rem;
+}
+
+.filter-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+.filter-btn.active {
+    background: var(--gradient-primary);
+    color: white;
+    border-color: transparent;
+}
+
+/* ============================================
+   EVENTS GRID & CARDS
+   ============================================ */
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: var(--spacing-xl);
+    margin-bottom: var(--spacing-2xl);
+}
+
+.event-card {
+    background: var(--bg-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.event-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.event-image {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: var(--spacing-lg);
+}
+
+.event-category {
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--text-primary);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    align-self: flex-start;
+}
+
+.event-date-badge {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: var(--spacing-sm);
+    text-align: center;
+    min-width: 60px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.date-day {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-primary);
+    line-height: 1;
+}
+
+.date-month {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: var(--spacing-xs);
+}
+
+.event-content {
+    padding: var(--spacing-lg);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.event-card h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: var(--spacing-md);
+    color: var(--text-primary);
+    line-height: 1.4;
+}
+
+.event-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-md);
+}
+
+.event-meta i {
+    color: var(--color-primary);
+    font-size: 1rem;
+}
+
+.event-description {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--spacing-lg);
+    flex: 1;
+    font-size: 0.95rem;
+}
+
+.event-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--border-color);
+}
+
+.event-attendees {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.event-attendees i {
+    color: var(--color-primary);
+}
+
+.btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+}
+
+/* ============================================
+   EVENT FILTER ANIMATION
+   ============================================ */
+.event-card {
+    animation: fadeInScale 0.5s ease forwards;
+}
+
+.event-card.hidden {
+    display: none;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ============================================
+   CTA SECTION FOR EVENTS
+   ============================================ */
+.cta {
+    margin-top: var(--spacing-2xl);
+}
+
+.social-links-cta {
+    display: flex;
+    justify-content: center;
+    gap: var(--spacing-lg);
+    margin-top: var(--spacing-lg);
+}
+
+.social-icon {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-primary);
+    font-size: 1.3rem;
+    transition: var(--transition);
+}
+
+.social-icon:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+    background: var(--color-primary);
+    color: white;
+}
+
+/* ============================================
+   RESPONSIVE DESIGN FOR EVENTS
+   ============================================ */
+@media (max-width: 768px) {
+    .page-header {
+        padding: 100px var(--spacing-lg) var(--spacing-xl);
+        margin-top: 70px;
+    }
+
+    .page-header h1 {
+        font-size: 2rem;
+    }
+
+    .page-header p {
+        font-size: 1rem;
+    }
+
+    .filter-buttons {
+        gap: var(--spacing-sm);
+    }
+
+    .filter-btn {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.9rem;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+        gap: var(--spacing-lg);
+    }
+
+    .event-card {
+        flex-direction: row;
+    }
+
+    .event-image {
+        width: 150px;
+        min-width: 150px;
+        height: auto;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: var(--spacing-md);
+    }
+
+    .event-card h3 {
+        font-size: 1.1rem;
+    }
+
+    .event-footer {
+        flex-direction: column;
+        gap: var(--spacing-md);
+        align-items: flex-start;
+    }
+
+    .btn-sm {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-header {
+        padding: 80px var(--spacing-md) var(--spacing-lg);
+    }
+
+    .page-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .page-header p {
+        font-size: 0.95rem;
+    }
+
+    .filter-container h3 {
+        font-size: 1.2rem;
+    }
+
+    .filter-buttons {
+        gap: var(--spacing-sm);
+    }
+
+    .filter-btn {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .events-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .event-card {
+        flex-direction: column;
+    }
+
+    .event-image {
+        width: 100%;
+        height: 180px;
+    }
+
+    .event-card h3 {
+        font-size: 1rem;
+    }
+
+    .social-links-cta {
+        gap: var(--spacing-md);
+    }
+
+    .social-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 1.1rem;
+    }
+}
