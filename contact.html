@@ -545,6 +545,12 @@ background: #B79A67;
                 <img src="assets/icon/LOGO IKRAM (resolusi kecil).png" alt="">
             </div>
         </div>
+
+            <button class="hamburger" id="hamburger" aria-label="Buka menu" aria-controls="navMenu" aria-expanded="false" type="button">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
             
             <div class="nav-menu" id="navMenu">
                 <a href="index.html" class="nav-link">Beranda</a>
@@ -877,9 +883,11 @@ background: #B79A67;
         // Hamburger Menu
         const hamburger = document.getElementById('hamburger');
         const navMenu = document.getElementById('navMenu');
-        if(hamburger) {
+        if(hamburger && navMenu) {
             hamburger.addEventListener('click', () => {
-                navMenu.classList.toggle('active');
+                const isExpanded = navMenu.classList.toggle('active');
+                hamburger.classList.toggle('active', isExpanded);
+                hamburger.setAttribute('aria-expanded', String(isExpanded));
             });
         }
 

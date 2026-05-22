@@ -37,11 +37,14 @@ document.addEventListener('DOMContentLoaded', function() {
 // EVENT LISTENERS SETUP
 // ============================================
 function setupEventListeners() {
-    // Hamburger menu toggle
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
-    });
+// Hamburger menu toggle
+    if (hamburger && navMenu) {
+        hamburger.addEventListener('click', () => {
+            const isExpanded = navMenu.classList.toggle('active');
+            hamburger.classList.toggle('active', isExpanded);
+            hamburger.setAttribute('aria-expanded', String(isExpanded));
+        });
+    }
 
     // Theme toggle
     themeToggle.addEventListener('click', toggleTheme);
@@ -432,11 +435,13 @@ function setupFocusTrap() {
 }
 
 // Initialize when menu is opened
-hamburger.addEventListener('click', () => {
-    if (navMenu.classList.contains('active')) {
-        setupFocusTrap();
-        navMenu.querySelector('a').focus();
-    }
-});
+if (hamburger && navMenu) {
+    hamburger.addEventListener('click', () => {
+        if (navMenu.classList.contains('active')) {
+            setupFocusTrap();
+            navMenu.querySelector('a')?.focus();
+        }
+    });
+}
 
 console.log('[v0] IKRAM Website initialized successfully');
