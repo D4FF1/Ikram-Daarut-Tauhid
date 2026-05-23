@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Admin - IKRAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .setup-container {
+            width: 100%;
+            max-width: 500px;
+        }
+        .setup-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px -10px rgba(74, 109, 44, 0.15);
+            padding: 40px 30px;
+        }
+        .setup-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .setup-header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #4A6D2C;
+            margin-bottom: 8px;
+        }
+        .setup-header p {
+            color: #666;
+            font-size: 0.95rem;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: #333;
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8FA35F;
+        }
+        .form-input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .form-input:focus {
+            outline: none;
+            border-color: #4A6D2C;
+            box-shadow: 0 0 0 4px rgba(74, 109, 44, 0.1);
+        }
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4A6D2C, #6b8f3f);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(74, 109, 44, 0.5);
+        }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .alert {
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #4A6D2C;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .info-box {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+        .info-box h3 {
+            color: #166534;
+            font-size: 1rem;
+            margin-bottom: 8px;
+        }
+        .info-box p {
+            color: #166534;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .credentials {
+            background: #f5f5f5;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-card">
+            <div class="setup-header">
+                <h1><i class="fas fa-user-shield"></i> Setup Admin</h1>
+                <p>Buat akun admin untuk mengelola event IKRAM</p>
+            </div>
+
+            <div class="info-box" id="existingAdminBox" style="display:none;">
+                <h3><i class="fas fa-check-circle"></i> Admin Sudah Ada</h3>
+                <p>Silakan login dengan kredensial berikut:</p>
+                <div class="credentials" id="adminCredentials"></div>
+            </div>
+
+            <form id="setupForm">
+                <div class="form-group">
+                    <label for="email">Email Admin</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" class="form-input" placeholder="admin@ikram.org" value="admin@ikram.org" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" class="form-input" placeholder="Minimal 6 karakter" required minlength="6">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="nama">Nama Admin</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="nama" class="form-input" placeholder="Nama lengkap" value="Admin IKRAM" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="no_hp">No HP / WhatsApp</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-phone"></i>
+                        <input type="tel" id="no_hp" class="form-input" placeholder="08xxxxxxxxxx" value="081234567890" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span>Buat Admin</span>
+                    <i class="fas fa-user-plus"></i>
+                </button>
+
+                <div id="alertBox" class="alert"></div>
+            </form>
+
+            <a href="login-supabase.html" class="back-link">
+                <i class="fas fa-arrow-left"></i> Kembali ke Login
+            </a>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase } from './js/supabaseClient.js';
+
+        const form = document.getElementById('setupForm');
+        const alertBox = document.getElementById('alertBox');
+        const submitBtn = document.getElementById('submitBtn');
+        const existingAdminBox = document.getElementById('existingAdminBox');
+
+        // Check if admin already exists
+        async function checkExistingAdmin() {
+            const { data: profiles } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('role', 'admin')
+                .limit(1);
+
+            if (profiles && profiles.length > 0) {
+                existingAdminBox.style.display = 'block';
+                document.getElementById('adminCredentials').innerHTML = `
+                    Email: <strong>${profiles[0].email}</strong><br>
+                    Password: <strong>Gunakan password yang Anda buat</strong>
+                `;
+                form.style.display = 'none';
+            }
+        }
+
+        checkExistingAdmin();
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const nama = document.getElementById('nama').value.trim();
+            const no_hp = document.getElementById('no_hp').value.trim();
+
+            if (password.length < 6) {
+                showAlert('Password minimal 6 karakter', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+            try {
+                // Check if email already exists
+                const { data: existingProfiles } = await supabase
+                    .from('profiles')
+                    .select('id')
+                    .eq('email', email)
+                    .limit(1);
+
+                if (existingProfiles && existingProfiles.length > 0) {
+                    showAlert('Email sudah terdaftar. Silakan gunakan email lain atau login.', 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Buat Admin</span><i class="fas fa-user-plus"></i>';
+                    return;
+                }
+
+                // Create user with Supabase Auth
+                const { data: authData, error: authError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            nama,
+                            no_hp
+                        },
+                        emailRedirectTo: window.location.origin + '/login-supabase.html'
+                    }
+                });
+
+                if (authError) throw authError;
+
+                if (authData.user) {
+                    // Update the profile to admin role
+                    const { error: updateError } = await supabase
+                        .from('profiles')
+                        .update({ role: 'admin' })
+                        .eq('id', authData.user.id);
+
+                    if (updateError) {
+                        console.error('Error updating profile:', updateError);
+                    }
+
+                    showAlert('Admin berhasil dibuat! Silakan login dengan kredensial tersebut.', 'success');
+
+                    setTimeout(() => {
+                        window.location.href = 'login-supabase.html';
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Setup error:', error);
+                let message = 'Gagal membuat admin. ';
+
+                if (error.message.includes('already registered')) {
+                    message = 'Email sudah terdaftar. Silakan login atau gunakan email lain.';
+                } else if (error.message.includes('Password')) {
+                    message = 'Password tidak memenuhi syarat. Minimal 6 karakter.';
+                } else {
+                    message += error.message;
+                }
+
+                showAlert(message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Buat Admin</span><i class="fas fa-user-plus"></i>';
+            }
+        });
+
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

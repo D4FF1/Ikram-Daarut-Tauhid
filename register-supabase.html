@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun - IKRAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 50%, #f0fdf4 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .auth-card {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px -10px rgba(74, 109, 44, 0.15);
+            padding: 40px 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(135deg, #4A6D2C, #8FA35F);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #f5f5f5;
+            color: #4A6D2C;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .back-link:hover {
+            background: #4A6D2C;
+            color: white;
+            transform: translateX(-3px);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-header h1 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: #4A6D2C;
+            margin-bottom: 8px;
+        }
+
+        .auth-header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            margin-bottom: 7px;
+            color: #333;
+        }
+
+        .form-group label small {
+            font-weight: 400;
+            color: #888;
+            font-size: 0.78rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8FA35F;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            border: 2px solid #e5e5e5;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #4A6D2C;
+            box-shadow: 0 0 0 4px rgba(74, 109, 44, 0.1);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        @media (max-width: 480px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #4A6D2C, #6b8f3f);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(74, 109, 44, 0.5);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .auth-footer p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .auth-footer a {
+            color: #4A6D2C;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .alert {
+            padding: 14px;
+            border-radius: 10px;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+            color: #999;
+            font-size: 0.85rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e5e5e5;
+        }
+
+        .divider span {
+            padding: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+
+            <div class="auth-header">
+                <h1>Buat Akun Baru</h1>
+                <p>Daftar untuk bergabung dengan event IKRAM</p>
+            </div>
+
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="nama">Nama Lengkap</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-user"></i>
+                        <input type="text" id="nama" name="nama" class="form-input" placeholder="Nama lengkap Anda" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" class="form-input" placeholder="email@contoh.com" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="no_hp">No HP / WhatsApp</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="no_hp" name="no_hp" class="form-input" placeholder="08xxxxxxxxxx" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="asal_institusi">Asal Institusi <small>(opsional)</small></label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-building"></i>
+                        <input type="text" id="asal_institusi" name="asal_institusi" class="form-input" placeholder="Sekolah / Universitas / Perusahaan">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password <small>(min. 6 karakter)</small></label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" name="password" class="form-input" placeholder="Buat password" required minlength="6">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    <span>Daftar Sekarang</span>
+                    <i class="fas fa-user-plus"></i>
+                </button>
+
+                <div id="alertBox" class="alert"></div>
+            </form>
+
+            <div class="divider">
+                <span>atau</span>
+            </div>
+
+            <div class="auth-footer">
+                <p>Sudah punya akun? <a href="login-supabase.html">Masuk di sini</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, showToast } from './js/supabaseClient.js';
+
+        const form = document.getElementById('registerForm');
+        const alertBox = document.getElementById('alertBox');
+        const submitBtn = document.getElementById('submitBtn');
+
+        // Check if already logged in
+        supabase.auth.getUser().then(({ data: { user } }) => {
+            if (user) {
+                window.location.href = 'dashboard-supabase.html';
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nama = document.getElementById('nama').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const no_hp = document.getElementById('no_hp').value.trim();
+            const asal_institusi = document.getElementById('asal_institusi').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!nama || !email || !no_hp || !password) {
+                showAlert('Semua field wajib harus diisi', 'error');
+                return;
+            }
+
+            if (password.length < 6) {
+                showAlert('Password minimal 6 karakter', 'error');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+
+            try {
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            nama,
+                            no_hp,
+                            asal_institusi
+                        },
+                        emailRedirectTo: window.location.origin + '/login-supabase.html'
+                    }
+                });
+
+                if (error) {
+                    throw error;
+                }
+
+                if (data.user) {
+                    showAlert('Pendaftaran berhasil! Cek email untuk konfirmasi atau langsung login.', 'success');
+
+                    setTimeout(() => {
+                        window.location.href = 'login-supabase.html';
+                    }, 2000);
+                }
+            } catch (error) {
+                console.error('Register error:', error);
+                let message = 'Gagal mendaftar. Silakan coba lagi.';
+
+                if (error.message.includes('already registered')) {
+                    message = 'Email sudah terdaftar. Silakan login atau gunakan email lain.';
+                } else if (error.message.includes('Password')) {
+                    message = 'Password tidak memenuhi syarat. Minimal 6 karakter.';
+                }
+
+                showAlert(message, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<span>Daftar Sekarang</span><i class="fas fa-user-plus"></i>';
+            }
+        });
+
+        function showAlert(message, type) {
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

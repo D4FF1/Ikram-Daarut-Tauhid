@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - IKRAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #4A6D2C;
+            --primary-light: #8FA35F;
+            --primary-dark: #2D4620;
+            --secondary: #B79A67;
+            --danger: #dc2626;
+            --success: #16a34a;
+            --warning: #d97706;
+            --gray-100: #f5f7f2;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-800);
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: var(--primary-dark);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: transform 0.3s;
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-header h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+            padding: 24px 0;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 24px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            border-left: 4px solid transparent;
+            cursor: pointer;
+        }
+
+        .nav-item:hover {
+            background: rgba(255,255,255,0.05);
+            color: white;
+        }
+
+        .nav-item.active {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-left-color: var(--secondary);
+        }
+
+        .nav-item i {
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .user-role {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        .btn-logout {
+            width: 100%;
+            padding: 12px;
+            background: rgba(220,38,38,0.2);
+            color: #fca5a5;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background: white;
+            padding: 20px 32px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .mobile-toggle {
+            display: none;
+            background: var(--gray-100);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 32px;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .stat-box {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
+            border-left: 4px solid var(--primary);
+        }
+
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.events { background: #dbeafe; color: #2563eb; }
+        .stat-icon.pending { background: #fef3c7; color: #d97706; }
+        .stat-icon.approved { background: #d1fae5; color: #16a34a; }
+
+        .stat-num {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--gray-800);
+            line-height: 1;
+        }
+
+        .stat-label {
+            color: var(--gray-600);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* Section Card */
+        .section-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
+            display: none;
+        }
+
+        .section-card.active {
+            display: block;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--gray-200);
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--gray-800);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74,109,44,0.3);
+        }
+
+        .btn-success { background: var(--success); color: white; }
+        .btn-danger { background: var(--danger); color: white; }
+        .btn-gray { background: var(--gray-200); color: var(--gray-800); }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        th {
+            background: var(--gray-100);
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--gray-600);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-approved { background: #d1fae5; color: #065f46; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+        .badge-category { background: var(--secondary); background: #ffe4cb; color: #7c2d12; }
+
+        .actions-cell {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .action-btn-appove {
+            background: #d1fae5;
+            color: var(--success);
+        }
+
+        .action-btn-appove:hover {
+            background: var(--success);
+            color: white;
+        }
+
+        .action-btn-reject {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .action-btn-reject:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .action-btn-edit {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .action-btn-edit:hover {
+            background: #2563eb;
+            color: white;
+        }
+
+        .action-btn-delete {
+            background: #fee2e2;
+            color: var(--danger);
+        }
+
+        .action-btn-delete:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-card {
+            background: white;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--gray-100);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        @media (max-width: 640px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+            color: var(--gray-800);
+        }
+
+        .form-input-group {
+            position: relative;
+        }
+
+        .form-input-group i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-light);
+        }
+
+        .form-input-group input,
+        .form-input-group select,
+        .form-input-group textarea {
+            width: 100%;
+            padding: 12px 14px 12px 42px;
+            border: 2px solid var(--gray-200);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .form-input-group input:not([type="date"]):not([type="time"]),
+        .form-input-group textarea,
+        .form-input-group select {
+            padding-left: 14px;
+        }
+
+        .form-input-group i + input,
+        .form-input-group i + select {
+            padding-left: 42px;
+        }
+
+        .form-input-group input:focus,
+        .form-input-group select:focus,
+        .form-input-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74,109,44,0.1);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            padding: 24px;
+            border-top: 1px solid var(--gray-200);
+            justify-content: flex-end;
+        }
+
+        .empty-table {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-600);
+        }
+
+        .empty-table i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            color: var(--gray-300);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h1><i class="fas fa-mosque"></i> IKRAM Admin</h1>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-item active" data-page="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </div>
+            <div class="nav-item" data-page="events">
+                <i class="fas fa-calendar-alt"></i>
+                <span>Kelola Event</span>
+            </div>
+            <div class="nav-item" data-page="registrations">
+                <i class="fas fa-user-check"></i>
+                <span>Pendaftaran</span>
+                <span id="regBadge" style="margin-left:auto;background:#ef4444;padding:2px 8px;border-radius:12px;font-size:0.75rem;">0</span>
+            </div>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div class="user-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div>
+                    <div class="user-name" id="adminName">Admin</div>
+                    <div class="user-role">Administrator</div>
+                </div>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <h1 class="page-title" id="pageTitle">Dashboard</h1>
+            <button class="mobile-toggle" id="mobileToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Dashboard Page -->
+            <div class="section-card active" id="dashboardPage">
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-icon events"><i class="fas fa-calendar-alt"></i></div>
+                        <div>
+                            <div class="stat-num" id="statEvents">0</div>
+                            <div class="stat-label">Total Event</div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon pending"><i class="fas fa-clock"></i></div>
+                        <div>
+                            <div class="stat-num" id="statPending">0</div>
+                            <div class="stat-label">Pending</div>
+                        </div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-icon approved"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <div class="stat-num" id="statApproved">0</div>
+                            <div class="stat-label">Disetujui</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Page -->
+            <div class="section-card" id="eventsPage">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        Daftar Event
+                    </h2>
+                    <button class="btn btn-primary" id="addEventBtn">
+                        <i class="fas fa-plus"></i> Tambah Event
+                    </button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="eventsTable">
+                        <thead>
+                            <tr>
+                                <th>Judul</th>
+                                <th>Tanggal</th>
+                                <th>Waktu</th>
+                                <th>Lokasi</th>
+                                <th>Kategori</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Registrations Page -->
+            <div class="section-card" id="registrationsPage">
+                <div class="section-header">
+                    <h2 class="section-title">
+                        <i class="fas fa-user-check"></i>
+                        Pendaftaran Event
+                    </h2>
+                    <div id="regFilter">
+                        <button class="btn btn-gray" data-filter="pending">Pending</button>
+                        <button class="btn btn-gray" data-filter="approved">Disetujui</button>
+                        <button class="btn btn-gray" data-filter="rejected">Ditolak</button>
+                        <button class="btn btn-primary" data-filter="all">Semua</button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="regsTable">
+                        <thead>
+                            <tr>
+                                <th>Nama</th>
+                                <th>Email</th>
+                                <th>Event</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="regsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Event Modal -->
+    <div class="modal-overlay" id="eventModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2 id="eventModalTitle">Tambah Event</h2>
+                <button class="modal-close" onclick="closeEventModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="eventForm">
+                <div class="modal-body">
+                    <input type="hidden" id="eventId">
+                    <div class="form-group">
+                        <label>Judul Event</label>
+                        <input type="text" id="eventJudul" class="input" required
+                               style="width:100%;padding:12px;margin-left:0;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins';">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tanggal</label>
+                            <input type="date" id="eventTanggal" class="input" required
+                                   style="width:100%;padding:12px;margin-left:0;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins';">
+                        </div>
+                        <div class="form-group">
+                            <label>Waktu</label>
+                            <input type="time" id="eventWaktu" class="input" required
+                                   style="width:100%;padding:12px;margin-left:0;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins';">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Kategori</label>
+                            <select id="eventKategori" class="input" required
+                                    style="width:100%;padding:12px;margin-left:0;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins';">
+                                <option value="workshop">Workshop</option>
+                                <option value="seminar">Seminar</option>
+                                <option value="outing">Outing</option>
+                                <option value="kompetisi">Kompetisi</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Kuota Peserta</label>
+                            <input type="number" id="eventKuota" class="input" min="0"
+                                   style="width:100%;padding:12px;margin-left:0;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins';">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Lokasi</label>
+                        <input type="text" id="eventLokasi" class="input"
+                               style="width:100%;padding:12px;margin-left:0;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins';">
+                    </div>
+                    <div class="form-group">
+                        <label>Deskripsi</label>
+                        <textarea id="eventDeskripsi" rows="3" class="input"
+                                  style="width:100%;padding:12px;margin-left:0;border:2px solid #e5e7eb;border-radius:10px;font-family:'Poppins';"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-gray" onclick="closeEventModal()">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { supabase, getCurrentUser, formatDate } from './js/supabaseClient.js';
+
+        let currentUser = null;
+        let currentRegFilter = 'all';
+        let editingEventId = null;
+        let allEvents = [];
+        let allRegistrations = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (!user) {
+                window.location.href = 'login-supabase.html';
+                return;
+            }
+
+            currentUser = await getCurrentUser();
+
+            // Check if user is admin
+            if (!currentUser || currentUser.role !== 'admin') {
+                alert('Akses ditolak. Anda bukan admin.');
+                window.location.href = 'dashboard-supabase.html';
+                return;
+            }
+
+            document.getElementById('adminName').textContent = currentUser.nama.split(' ')[0];
+
+            await loadAllData();
+            setupNavigation();
+            setupFilters();
+            setupEventForm();
+            setupMobileToggle();
+        });
+
+        // Load all data
+        async function loadAllData() {
+            // Load events
+            const { data: events } = await supabase.from('events').select('*').order('tanggal', { ascending: true });
+            allEvents = events || [];
+            renderEvents();
+            updateStats();
+
+            // Load registrations with user and event info
+            const { data: regs } = await supabase
+                .from('registrations')
+                .select(`
+                    id, status, created_at, alasan_mendaftar,
+                    profiles (id, nama, email, no_hp),
+                    events (id, judul)
+                `)
+                .order('created_at', { ascending: false });
+
+            allRegistrations = regs || [];
+            renderRegistrations();
+            updateStats();
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('statEvents').textContent = allEvents.length;
+            document.getElementById('statPending').textContent = allRegistrations.filter(r => r.status === 'pending').length;
+            document.getElementById('statApproved').textContent = allRegistrations.filter(r => r.status === 'approved').length;
+            document.getElementById('regBadge').textContent = allRegistrations.filter(r => r.status === 'pending').length;
+        }
+
+        // Render events table
+        function renderEvents() {
+            const tbody = document.getElementById('eventsBody');
+
+            if (allEvents.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6">
+                        <div class="empty-table">
+                            <i class="fas fa-calendar-times"></i>
+                            <p>Belum ada event</p>
+                        </div>
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = allEvents.map(event => `
+                <tr>
+                    <td><strong>${event.judul}</strong></td>
+                    <td>${formatDate(event.tanggal)}</td>
+                    <td>${event.waktu}</td>
+                    <td>${event.lokasi || '-'}</td>
+                    <td><span class="badge badge-category">${event.kategori}</span></td>
+                    <td class="actions-cell">
+                        <button class="action-btn action-btn-edit" onclick="editEvent('${event.id}')" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="action-btn action-btn-delete" onclick="deleteEvent('${event.id}')" title="Hapus">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Render registrations table
+        function renderRegistrations() {
+            const tbody = document.getElementById('regsBody');
+            const filtered = currentRegFilter === 'all'
+                ? allRegistrations
+                : allRegistrations.filter(r => r.status === currentRegFilter);
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr><td colspan="6">
+                        <div class="empty-table">
+                            <i class="fas fa-inbox"></i>
+                            <p>Tidak ada pendaftaran</p>
+                        </div>
+                    </td></tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(reg => {
+                const user = reg.profiles;
+                const event = reg.events;
+                const statusClass = {
+                    pending: 'badge-pending',
+                    approved: 'badge-approved',
+                    rejected: 'badge-rejected'
+                }[reg.status];
+                const statusLabel = {
+                    pending: 'Pending',
+                    approved: 'Disetujui',
+                    rejected: 'Ditolak'
+                }[reg.status];
+
+                const actionButtons = reg.status === 'pending' ? `
+                    <button class="action-btn action-btn-appove" onclick="approveReg('${reg.id}')" title="Setujui">
+                        <i class="fas fa-check"></i>
+                    </button>
+                    <button class="action-btn action-btn-reject" onclick="rejectReg('${reg.id}')" title="Tolak">
+                        <i class="fas fa-times"></i>
+                    </button>
+                ` : `
+                    <button class="action-btn action-btn-edit" onclick="viewDetails('${reg.id}')" title="Lihat">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                `;
+
+                return `
+                    <tr>
+                        <td><strong>${user?.nama || '-'}</strong></td>
+                        <td>${user?.email || '-'}</td>
+                        <td>${event?.judul || '-'}</td>
+                        <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                        <td>${new Date(reg.created_at).toLocaleDateString('id-ID')}</td>
+                        <td class="actions-cell">${actionButtons}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Setup navigation
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const pages = {
+                dashboard: document.getElementById('dashboardPage'),
+                events: document.getElementById('eventsPage'),
+                registrations: document.getElementById('registrationsPage')
+            };
+
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    const page = item.dataset.page;
+
+                    navItems.forEach(i => i.classList.remove('active'));
+                    item.classList.add('active');
+
+                    Object.values(pages).forEach(p => p.classList.remove('active'));
+                    pages[page].classList.add('active');
+
+                    document.getElementById('pageTitle').textContent = {
+                        dashboard: 'Dashboard',
+                        events: 'Kelola Event',
+                        registrations: 'Pendaftaran Event'
+                    }[page];
+
+                    // Close mobile sidebar
+                    document.getElementById('sidebar').classList.remove('active');
+                });
+            });
+
+            // Add Event Button
+            document.getElementById('addEventBtn').addEventListener('click', () => {
+                editingEventId = null;
+                document.getElementById('eventModalTitle').textContent = 'Tambah Event';
+                document.getElementById('eventForm').reset();
+                document.getElementById('eventModal').classList.add('active');
+            });
+        }
+
+        // Setup filters
+        function setupFilters() {
+            document.getElementById('regFilter').addEventListener('click', (e) => {
+                if (e.target.dataset.filter) {
+                    currentRegFilter = e.target.dataset.filter;
+                    renderRegistrations();
+                }
+            });
+        }
+
+        // Setup event form
+        function setupEventForm() {
+            document.getElementById('eventForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const eventData = {
+                    judul: document.getElementById('eventJudul').value,
+                    tanggal: document.getElementById('eventTanggal').value,
+                    waktu: document.getElementById('eventWaktu').value,
+                    kategori: document.getElementById('eventKategori').value,
+                    kuota_peserta: parseInt(document.getElementById('eventKuota').value) || 0,
+                    lokasi: document.getElementById('eventLokasi').value,
+                    deskripsi: document.getElementById('eventDeskripsi').value
+                };
+
+                try {
+                    if (editingEventId) {
+                        await supabase.from('events').update(eventData).eq('id', editingEventId);
+                    } else {
+                        eventData.created_by = currentUser?.id;
+                        await supabase.from('events').insert(eventData);
+                    }
+
+                    closeEventModal();
+                    await loadAllData();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+        }
+
+        // Setup mobile toggle
+        function setupMobileToggle() {
+            document.getElementById('mobileToggle').addEventListener('click', () => {
+                document.getElementById('sidebar').classList.toggle('active');
+            });
+        }
+
+        // Edit event
+        window.editEvent = async (eventId) => {
+            const event = allEvents.find(e => e.id === eventId);
+            if (!event) return;
+
+            editingEventId = eventId;
+            document.getElementById('eventModalTitle').textContent = 'Edit Event';
+            document.getElementById('eventJudul').value = event.judul;
+            document.getElementById('eventTanggal').value = event.tanggal;
+            document.getElementById('eventWaktu').value = event.waktu;
+            document.getElementById('eventKategori').value = event.kategori;
+            document.getElementById('eventKuota').value = event.kuota_peserta;
+            document.getElementById('eventLokasi').value = event.lokasi || '';
+            document.getElementById('eventDeskripsi').value = event.deskripsi || '';
+            document.getElementById('eventModal').classList.add('active');
+        };
+
+        // Delete event
+        window.deleteEvent = async (eventId) => {
+            if (!confirm('Yakin ingin menghapus event ini?')) return;
+
+            await supabase.from('events').delete().eq('id', eventId);
+            await loadAllData();
+        };
+
+        // Approve registration
+        window.approveReg = async (regId) => {
+            await supabase.from('registrations').update({ status: 'approved' }).eq('id', regId);
+            await loadAllData();
+        };
+
+        // Reject registration
+        window.rejectReg = async (regId) => {
+            await supabase.from('registrations').update({ status: 'rejected' }).eq('id', regId);
+            await loadAllData();
+        };
+
+        // View details
+        window.viewDetails = (regId) => {
+            const reg = allRegistrations.find(r => r.id === regId);
+            if (!reg) return;
+
+            const user = reg.profiles;
+            alert(`
+Nama: ${user?.nama}
+Email: ${user?.email}
+No HP: ${user?.no_hp}
+Event: ${reg.events?.judul}
+Status: ${reg.status}
+Alasan: ${reg.alasan_mendaftar || '-'}
+            `.trim());
+        };
+
+        // Close event modal
+        window.closeEventModal = () => {
+            document.getElementById('eventModal').classList.remove('active');
+            editingEventId = null;
+        };
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await supabase.auth.signOut();
+            window.location.href = 'login-supabase.html';
+        });
+    </script>
+</body>
+</html>
