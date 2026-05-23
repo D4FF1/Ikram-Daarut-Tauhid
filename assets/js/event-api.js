@@ -163,7 +163,7 @@ function renderEventCards(events) {
                     <span class="event-time">
                         <i class="fas fa-clock"></i> ${formatTime(event.waktu)}
                     </span>
-                    <button class="btn btn-primary btn-sm">Daftar</button>
+                    <button class="btn btn-primary btn-sm register-btn" data-event-id="${event.id}" onclick="openRegistrationModal(${event.id}, '${event.judul}')">Daftar</button>
                 </div>
             </div>
         `;
@@ -224,15 +224,201 @@ function formatTime(timeStr) {
     return `${hours}:${minutes}`;
 }
 
-// Add link to admin panel in navigation or footer
+// Registration Modal Functions
+let registrationModal = null;
+let currentRegistrationEventId = null;
+
+// Create and insert registration modal
+function initializeRegistrationModal() {
+    if (registrationModal) return;
+    
+    const modalHTML = `
+    <div id="registrationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Daftar Event</h2>
+                <button type="button" class="modal-close" aria-label="Close modal" onclick="closeRegistrationModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <form id="registrationForm" class="registration-form" onsubmit="handleRegistration(event)">
+                <div class="form-group">
+                    <label for="regNama">Nama Lengkap <span class="required">*</span></label>
+                    <input 
+                        type="text" 
+                        id="regNama" 
+                        name="nama"
+                        placeholder="Masukkan nama lengkap Anda"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="regEmail">Email <span class="required">*</span></label>
+                    <input 
+                        type="email" 
+                        id="regEmail" 
+                        name="email"
+                        placeholder="Masukkan email Anda"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="regNoHP">No HP/WhatsApp <span class="required">*</span></label>
+                    <input 
+                        type="tel" 
+                        id="regNoHP" 
+                        name="no_hp"
+                        placeholder="Masukkan nomor telepon (misal: 08123456789)"
+                        required
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="regInstitusi">Asal Institusi</label>
+                    <input 
+                        type="text" 
+                        id="regInstitusi" 
+                        name="asal_institusi"
+                        placeholder="Masukkan nama institusi/sekolah/universitas Anda (opsional)"
+                    >
+                </div>
+                
+                <div class="form-group">
+                    <label for="regAlasan">Alasan Mendaftar</label>
+                    <textarea 
+                        id="regAlasan" 
+                        name="alasan_mendaftar"
+                        placeholder="Jelaskan alasan Anda ingin mengikuti event ini (opsional)"
+                        rows="4"
+                    ></textarea>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeRegistrationModal()">Batalkan</button>
+                    <button type="submit" class="btn btn-primary">Daftar Sekarang</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    `;
+    
+    // Insert modal before closing body tag
+    const body = document.body;
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = modalHTML;
+    body.appendChild(tempDiv.firstElementChild);
+    
+    registrationModal = document.getElementById('registrationModal');
+}
+
+// Open registration modal
+function openRegistrationModal(eventId, eventTitle) {
+    if (!registrationModal) {
+        initializeRegistrationModal();
+    }
+    
+    currentRegistrationEventId = eventId;
+    document.querySelector('#registrationModal .modal-header h2').textContent = `Daftar: ${eventTitle}`;
+    document.getElementById('registrationForm').reset();
+    registrationModal.classList.add('active');
+}
+
+// Close registration modal
+function closeRegistrationModal() {
+    if (registrationModal) {
+        registrationModal.classList.remove('active');
+        currentRegistrationEventId = null;
+    }
+}
+
+// Handle registration form submission
+function handleRegistration(e) {
+    e.preventDefault();
+    
+    const nama = document.getElementById('regNama').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const no_hp = document.getElementById('regNoHP').value.trim();
+    const asal_institusi = document.getElementById('regInstitusi').value.trim();
+    const alasan_mendaftar = document.getElementById('regAlasan').value.trim();
+    
+    if (!nama || !email || !no_hp) {
+        showRegistrationToast('Mohon isi semua field yang wajib diisi', 'error');
+        return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showRegistrationToast('Format email tidak valid', 'error');
+        return;
+    }
+    
+    // Create registration object
+    const registration = {
+        id: Date.now(),
+        event_id: currentRegistrationEventId,
+        nama: nama,
+        email: email,
+        no_hp: no_hp,
+        asal_institusi: asal_institusi,
+        alasan_mendaftar: alasan_mendaftar,
+        status: 'pending',
+        created_at: new Date().toISOString()
+    };
+    
+    // Save registration to localStorage
+    const savedRegistrations = localStorage.getItem('ikram_registrations');
+    const registrations = savedRegistrations ? JSON.parse(savedRegistrations) : [];
+    
+    // Check if user already registered for this event
+    const alreadyRegistered = registrations.some(r => r.event_id === currentRegistrationEventId && r.email === email);
+    if (alreadyRegistered) {
+        showRegistrationToast('Anda sudah mendaftar untuk event ini', 'error');
+        return;
+    }
+    
+    registrations.push(registration);
+    localStorage.setItem('ikram_registrations', JSON.stringify(registrations));
+    
+    showRegistrationToast('Pendaftaran berhasil! Admin akan meninjau permintaan Anda dalam waktu singkat', 'success');
+    closeRegistrationModal();
+    
+    console.log('[v0] Registration created:', registration);
+}
+
+// Show toast notification for registration
+function showRegistrationToast(message, type = 'info') {
+    // Create toast element if it doesn't exist
+    let toast = document.getElementById('registrationToast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'registrationToast';
+        toast.className = 'registration-toast';
+        document.body.appendChild(toast);
+    }
+    
+    toast.textContent = message;
+    toast.className = `registration-toast ${type} show`;
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
+
+// Close modal when clicking outside
 document.addEventListener('DOMContentLoaded', () => {
-    // Optionally add admin link to nav menu
-    const navMenu = document.querySelector('.nav-menu');
-    if (navMenu) {
-        // Check if admin link already exists
-        const existingAdminLink = navMenu.querySelector('a[href="admin.html"]');
-        if (!existingAdminLink) {
-            // Don't add it automatically - let user manually add if needed
-        }
+    // Initialize modal
+    initializeRegistrationModal();
+    
+    // Close modal when clicking outside
+    if (registrationModal) {
+        registrationModal.addEventListener('click', (e) => {
+            if (e.target === registrationModal) {
+                closeRegistrationModal();
+            }
+        });
     }
 });

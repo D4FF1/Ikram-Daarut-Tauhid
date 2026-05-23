@@ -57,6 +57,28 @@ if ($conn->query($createEventsTableSQL) === TRUE) {
     echo "Error creating events table: " . $conn->error;
 }
 
+// Create registrations table
+$createRegistrationsTableSQL = "CREATE TABLE IF NOT EXISTS registrations (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    event_id INT NOT NULL,
+    nama VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    no_hp VARCHAR(20) NOT NULL,
+    asal_institusi VARCHAR(255),
+    alasan_mendaftar TEXT,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    UNIQUE KEY unique_registration (event_id, email)
+)";
+
+if ($conn->query($createRegistrationsTableSQL) === TRUE) {
+    echo "registrations table created successfully<br>";
+} else {
+    echo "Error creating registrations table: " . $conn->error;
+}
+
 // Insert default admin user (username: admin, password: admin123)
 $adminUsername = "admin";
 $adminPassword = password_hash("admin123", PASSWORD_BCRYPT);

@@ -24,6 +24,7 @@ const navItems = document.querySelectorAll('.nav-item');
 // Global state
 let currentEditingEventId = null;
 let allEvents = [];
+let allRegistrations = [];
 
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
@@ -57,7 +58,14 @@ function showDashboard(username) {
     adminName.textContent = username;
     userBadge.textContent = username;
     loadEvents();
+    loadRegistrations();
     updateStats();
+    
+    // Set up registrations filter listener
+    const statusFilter = document.getElementById('registrationStatusFilter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', filterRegistrations);
+    }
 }
 
 // Setup event listeners
@@ -223,12 +231,21 @@ function renderEventsTable() {
 function updateStats() {
     const totalEventsEl = document.getElementById('totalEvents');
     const upcomingEventsEl = document.getElementById('upcomingEvents');
+    const pendingRegistrationsEl = document.getElementById('pendingRegistrations');
+    const registrationBadge = document.getElementById('registrationBadge');
     
     const today = new Date().toISOString().split('T')[0];
     const upcomingCount = allEvents.filter(e => e.tanggal >= today).length;
+    const pendingCount = allRegistrations.filter(r => r.status === 'pending').length;
     
     totalEventsEl.textContent = allEvents.length;
     upcomingEventsEl.textContent = upcomingCount;
+    if (pendingRegistrationsEl) {
+        pendingRegistrationsEl.textContent = pendingCount;
+    }
+    if (registrationBadge) {
+        registrationBadge.textContent = pendingCount;
+    }
 }
 
 // Open add event modal
@@ -364,7 +381,8 @@ function switchMenu(menu) {
     // Update page title
     const titles = {
         dashboard: 'Dashboard',
-        events: 'Kelola Event'
+        events: 'Kelola Event',
+        registrations: 'Permintaan Registrasi'
     };
     document.getElementById('pageTitle').textContent = titles[menu] || 'Dashboard';
     
@@ -389,6 +407,163 @@ function showToast(message, type = 'info') {
     setTimeout(() => {
         toast.classList.remove('show');
     }, 3000);
+}
+
+// Load registrations from localStorage (for demo)
+function loadRegistrations() {
+    const savedRegistrations = localStorage.getItem('ikram_registrations');
+    allRegistrations = savedRegistrations ? JSON.parse(savedRegistrations) : [];
+    renderRegistrationsTable();
+}
+
+// Render registrations table
+function renderRegistrationsTable() {
+    const registrationsTableBody = document.getElementById('registrationsTableBody');
+    if (!registrationsTableBody) return;
+    
+    if (allRegistrations.length === 0) {
+        registrationsTableBody.innerHTML = '<tr><td colspan="8" class="text-center">Tidak ada permintaan registrasi</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    allRegistrations.forEach((reg, index) => {
+        const statusClass = `status-${reg.status}`;
+        const statusLabel = {
+            'pending': 'Tertunda',
+            'approved': 'Disetujui',
+            'rejected': 'Ditolak'
+        }[reg.status] || reg.status;
+        
+        const eventTitle = allEvents.find(e => e.id === reg.event_id)?.judul || `Event #${reg.event_id}`;
+        
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${reg.nama}</td>
+                <td>${reg.email}</td>
+                <td>${reg.no_hp}</td>
+                <td>${eventTitle}</td>
+                <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                <td>${formatDate(reg.created_at.split('T')[0])}</td>
+                <td class="actions">
+                    ${reg.status === 'pending' ? `
+                        <button class="btn-icon approve" onclick="approveRegistration(${reg.id})" title="Setujui">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-icon reject" onclick="rejectRegistration(${reg.id})" title="Tolak">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : `
+                        <button class="btn-icon view" onclick="viewRegistration(${reg.id})" title="Lihat">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    `}
+                </td>
+            </tr>
+        `;
+    });
+    registrationsTableBody.innerHTML = html;
+}
+
+// Filter registrations by status
+function filterRegistrations(e) {
+    const status = e.target.value;
+    const registrationsTableBody = document.getElementById('registrationsTableBody');
+    
+    const filtered = status ? allRegistrations.filter(r => r.status === status) : allRegistrations;
+    
+    if (filtered.length === 0) {
+        registrationsTableBody.innerHTML = '<tr><td colspan="8" class="text-center">Tidak ada permintaan dengan filter ini</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    filtered.forEach((reg, index) => {
+        const statusClass = `status-${reg.status}`;
+        const statusLabel = {
+            'pending': 'Tertunda',
+            'approved': 'Disetujui',
+            'rejected': 'Ditolak'
+        }[reg.status] || reg.status;
+        
+        const eventTitle = allEvents.find(e => e.id === reg.event_id)?.judul || `Event #${reg.event_id}`;
+        
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${reg.nama}</td>
+                <td>${reg.email}</td>
+                <td>${reg.no_hp}</td>
+                <td>${eventTitle}</td>
+                <td><span class="badge ${statusClass}">${statusLabel}</span></td>
+                <td>${formatDate(reg.created_at.split('T')[0])}</td>
+                <td class="actions">
+                    ${reg.status === 'pending' ? `
+                        <button class="btn-icon approve" onclick="approveRegistration(${reg.id})" title="Setujui">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-icon reject" onclick="rejectRegistration(${reg.id})" title="Tolak">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : `
+                        <button class="btn-icon view" onclick="viewRegistration(${reg.id})" title="Lihat">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    `}
+                </td>
+            </tr>
+        `;
+    });
+    registrationsTableBody.innerHTML = html;
+}
+
+// Approve registration
+function approveRegistration(registrationId) {
+    const reg = allRegistrations.find(r => r.id === registrationId);
+    if (!reg) return;
+    
+    if (confirm(`Setujui pendaftaran ${reg.nama} untuk event ini?`)) {
+        reg.status = 'approved';
+        localStorage.setItem('ikram_registrations', JSON.stringify(allRegistrations));
+        renderRegistrationsTable();
+        updateStats();
+        showToast(`Pendaftaran ${reg.nama} disetujui`, 'success');
+    }
+}
+
+// Reject registration
+function rejectRegistration(registrationId) {
+    const reg = allRegistrations.find(r => r.id === registrationId);
+    if (!reg) return;
+    
+    if (confirm(`Tolak pendaftaran ${reg.nama} untuk event ini?`)) {
+        reg.status = 'rejected';
+        localStorage.setItem('ikram_registrations', JSON.stringify(allRegistrations));
+        renderRegistrationsTable();
+        updateStats();
+        showToast(`Pendaftaran ${reg.nama} ditolak`, 'info');
+    }
+}
+
+// View registration details
+function viewRegistration(registrationId) {
+    const reg = allRegistrations.find(r => r.id === registrationId);
+    if (!reg) return;
+    
+    const eventTitle = allEvents.find(e => e.id === reg.event_id)?.judul || `Event #${reg.event_id}`;
+    const message = `
+Nama: ${reg.nama}
+Email: ${reg.email}
+No HP: ${reg.no_hp}
+Asal Institusi: ${reg.asal_institusi || '-'}
+Event: ${eventTitle}
+Status: ${reg.status}
+
+Alasan Mendaftar:
+${reg.alasan_mendaftar || '-'}
+    `;
+    alert(message);
 }
 
 // Close sidebar when clicking outside

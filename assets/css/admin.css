@@ -861,3 +861,159 @@ body {
         font-size: 12px;
     }
 }
+
+/* Registrations Management Styles */
+.registrations-management {
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.filter-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.filter-select {
+    padding: 10px 15px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.filter-select:hover {
+    border-color: #4A6D2C;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #4A6D2C;
+    box-shadow: 0 0 0 3px rgba(74, 109, 44, 0.1);
+}
+
+.registrations-table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.registrations-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #fff;
+}
+
+.registrations-table thead {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.registrations-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.registrations-table td {
+    padding: 15px;
+    border-bottom: 1px solid #dee2e6;
+    font-size: 14px;
+    color: #555;
+}
+
+.registrations-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.registrations-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.registrations-table .actions {
+    display: flex;
+    gap: 10px;
+}
+
+/* Status badges */
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-approved {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Action buttons */
+.btn-icon.approve {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.btn-icon.approve:hover {
+    background-color: #c3e6cb;
+    border-color: #b1dfbb;
+}
+
+.btn-icon.reject {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.btn-icon.reject:hover {
+    background-color: #f5c6cb;
+    border-color: #f1b0b7;
+}
+
+.btn-icon.view {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+.btn-icon.view:hover {
+    background-color: #bee5eb;
+    border-color: #abdde5;
+}
+
+/* Registration badge in sidebar */
+#registrationBadge {
+    margin-left: auto;
+    background-color: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    min-width: 24px;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    .registrations-table {
+        font-size: 12px;
+    }
+    
+    .registrations-table th,
+    .registrations-table td {
+        padding: 10px;
+    }
+}
