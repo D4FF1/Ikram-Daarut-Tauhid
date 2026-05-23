@@ -2,6 +2,16 @@
 
 Sistem manajemen event lengkap dengan autentikasi pengguna dan panel admin untuk organisasi IKRAM.
 
+## STATUS: SISTEM SUDAH AKTIF ✓
+
+Database dan authentication sudah dikonfigurasi dengan benar. Anda bisa langsung menggunakan sistem.
+
+## Quick Start
+
+1. **Buka `setup-admin.html`** - Buat akun admin pertama
+2. **Login di `login-supabase.html`** - Gunakan kredensial admin
+3. **Akses `admin-supabase.html`** - Kelola event dan pendaftaran
+
 ## Fitur Utama
 
 ### 1. Autentikasi Pengguna
@@ -167,18 +177,31 @@ Sistem manajemen event lengkap dengan autentikasi pengguna dan panel admin untuk
 
 ### Error: "Akses ditolak. Anda bukan admin."
 - Pastikan sudah membuat admin via `setup-admin.html`
-- Cek di database jika profile sudah ada dengan role admin
+- Login dengan kredensial admin yang sudah dibuat
+- Cek di database: `SELECT * FROM profiles WHERE role = 'admin';`
 
 ### Error: "Email sudah terdaftar"
 - Email sudah digunakan, gunakan email lain atau login
+- Jika lupa password, gunakan fitur reset password Supabase
 
 ### Error: "Password minimal 6 karakter"
-- Gunakan password yang lebih panjang
+- Gunakan password minimal 6 karakter
 
 ### Tidak bisa mendaftar event
 - Pastikan sudah login
 - Cek apakah sudah pernah mendaftar event yang sama
 - Cek apakah kuota masih tersedia
+
+### Register berhasil tapi tidak bisa login
+- Cek email Anda untuk konfirmasi (jika email confirmation aktif)
+- Atau langsung coba login (jika email confirmation dinonaktifkan)
+- Supabase default: email confirmation DINONAKTIFKAN
+
+### Error saat registrasi
+1. Buka browser Developer Tools (F12)
+2. Lihat tab Console untuk error detail
+3. Cek Network tab untuk request yang gagal
+4. Kirim screenshot error ke admin
 
 ## Integrasi dengan Website Lama
 
