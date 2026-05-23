@@ -1,152 +1,100 @@
-// Event Page - Fetch events from API or localStorage
+// Event Page - Fetch events from MySQL API
+let currentUserSession = null;
+let allEventsData = [];
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await detectUserSession();
+    injectUserNavButton();
     loadEventsForDisplay();
+    initializeRegistrationModal();
 });
+
+async function detectUserSession() {
+    try {
+        const res = await fetch('api/user_auth.php?action=me', { credentials: 'include' });
+        const data = await res.json();
+        currentUserSession = data.success ? data.data : null;
+    } catch (e) { currentUserSession = null; }
+}
+
+function injectUserNavButton() {
+    const navMenu = document.getElementById('navMenu');
+    if (!navMenu) return;
+    // Remove old join button to avoid duplicates
+    const existing = navMenu.querySelector('.btn-join');
+    if (existing) existing.remove();
+    if (currentUserSession) {
+        const a = document.createElement('a');
+        a.href = 'dashboard.html';
+        a.className = 'nav-link btn-join';
+        a.setAttribute('data-testid', 'nav-dashboard');
+        a.textContent = `Hi, ${currentUserSession.nama.split(' ')[0]}`;
+        navMenu.appendChild(a);
+    } else {
+        const a = document.createElement('a');
+        a.href = 'login.html';
+        a.className = 'nav-link btn-join';
+        a.setAttribute('data-testid', 'nav-login');
+        a.textContent = 'Login / Daftar';
+        navMenu.appendChild(a);
+    }
+}
 
 async function loadEventsForDisplay() {
     try {
-        // Get events from localStorage (which is managed by admin panel)
-        const savedEvents = localStorage.getItem('ikram_events');
-        const events = savedEvents ? JSON.parse(savedEvents) : getDefaultEvents();
-        
-        console.log('[v0] Events loaded:', events);
+        const res = await fetch('api/events.php');
+        const data = await res.json();
+        const events = data.success ? data.data : [];
+        allEventsData = events;
         renderEventCards(events);
-        setupFilterButtons(events);
-    } catch (error) {
-        console.error('[v0] Error loading events:', error);
-        // Fallback to default events if localStorage is empty
-        const defaultEvents = getDefaultEvents();
-        renderEventCards(defaultEvents);
-        setupFilterButtons(defaultEvents);
+        setupFilterButtons();
+    } catch (e) {
+        console.error('[event-api] error', e);
+        renderEventCards([]);
     }
-}
-
-// Get default events (same as admin.js)
-function getDefaultEvents() {
-    return [
-        {
-            id: 1,
-            judul: 'Workshop Leadership & Public Speaking',
-            deskripsi: 'Tingkatkan skill kepemimpinan dan kemampuan berbicara di depan publik bersama mentor profesional dari industri. Sesi interaktif dengan simulasi real-world.',
-            tanggal: '2024-06-25',
-            waktu: '14:00',
-            lokasi: 'Aula Utama IKRAM, Jakarta',
-            kategori: 'workshop'
-        },
-        {
-            id: 2,
-            judul: 'Seminar Industri 4.0 & Entrepreneurship',
-            deskripsi: 'Menghadirkan pembicara dari startup terkemuka untuk membagikan insight tentang dunia startup, inovasi, dan strategi bisnis di era digital.',
-            tanggal: '2024-07-10',
-            waktu: '15:00',
-            lokasi: 'Gedung Serbaguna, Jakarta',
-            kategori: 'seminar'
-        },
-        {
-            id: 3,
-            judul: 'Team Building & Outing IKRAM',
-            deskripsi: 'Acara gathering untuk mempererat hubungan antar divisi dan merayakan pencapaian bersama. Aktivitas out-bound, games, dan quality time.',
-            tanggal: '2024-07-20',
-            waktu: '08:00',
-            lokasi: 'Puncak, Bogor',
-            kategori: 'outing'
-        },
-        {
-            id: 4,
-            judul: 'Seminar Digital Marketing & Personal Branding',
-            deskripsi: 'Pelajari strategi digital marketing terkini dan cara membangun personal branding yang kuat di era media sosial dan digital.',
-            tanggal: '2024-08-05',
-            waktu: '15:00',
-            lokasi: 'Conference Room, Jakarta',
-            kategori: 'seminar'
-        },
-        {
-            id: 5,
-            judul: 'Workshop Design Thinking & Innovation',
-            deskripsi: 'Workshop intensif tentang metodologi design thinking untuk menciptakan solusi inovatif terhadap berbagai permasalahan di masyarakat.',
-            tanggal: '2024-08-15',
-            waktu: '10:00',
-            lokasi: 'Studio Kreatif, Jakarta',
-            kategori: 'workshop'
-        },
-        {
-            id: 6,
-            judul: 'IKRAM Debate Competition 2024',
-            deskripsi: 'Kompetisi debat antar divisi dan institusi dengan tema-tema kontroversial yang relevan dengan isu sosial dan pendidikan terkini.',
-            tanggal: '2024-09-01',
-            waktu: '09:00',
-            lokasi: 'Auditorium Utama, Jakarta',
-            kategori: 'kompetisi'
-        },
-        {
-            id: 7,
-            judul: 'Workshop Project Management & Agile Methods',
-            deskripsi: 'Pelajari metodologi project management modern dan agile untuk mengelola proyek organisasi dengan efisien dan efektif.',
-            tanggal: '2024-09-10',
-            waktu: '14:00',
-            lokasi: 'Meeting Room, Jakarta',
-            kategori: 'workshop'
-        },
-        {
-            id: 8,
-            judul: 'Seminar Career Development & Networking',
-            deskripsi: 'Kesempatan networking dengan profesional dan perusahaan besar, serta pembahasan strategi pengembangan karir yang tepat.',
-            tanggal: '2024-09-20',
-            waktu: '16:00',
-            lokasi: 'Convention Hall, Jakarta',
-            kategori: 'seminar'
-        },
-        {
-            id: 9,
-            judul: 'IKRAM Innovation Challenge',
-            deskripsi: 'Kompetisi inovasi dengan hadiah menarik untuk ide-ide terbaik dalam mengembangkan solusi sosial dan teknologi.',
-            tanggal: '2024-10-05',
-            waktu: '09:00',
-            lokasi: 'Innovation Hub, Jakarta',
-            kategori: 'kompetisi'
-        }
-    ];
 }
 
 function renderEventCards(events) {
-    const eventsGrid = document.querySelector('.events-grid');
-    if (!eventsGrid) return;
-    
-    // Clear existing cards
-    eventsGrid.innerHTML = '';
-    
-    if (events.length === 0) {
-        eventsGrid.innerHTML = '<p style="grid-column: 1/-1; text-align: center; padding: 40px; color: #666;">Belum ada event tersedia.</p>';
+    const grid = document.querySelector('.events-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    if (!events.length) {
+        grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;padding:40px;color:#666;">Belum ada event tersedia.</p>';
         return;
     }
-    
-    // Create color gradients for event cards
+
     const gradients = [
-        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
-        'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
-        'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
-        'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
-        'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
-        'linear-gradient(135deg, #f5af19 0%, #f12711 100%)',
-        'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-        'linear-gradient(135deg, #11998e 0%, #38ef7d 100%)'
+        'linear-gradient(135deg,#667eea 0%,#764ba2 100%)',
+        'linear-gradient(135deg,#f093fb 0%,#f5576c 100%)',
+        'linear-gradient(135deg,#4facfe 0%,#00f2fe 100%)',
+        'linear-gradient(135deg,#43e97b 0%,#38f9d7 100%)',
+        'linear-gradient(135deg,#fa709a 0%,#fee140 100%)',
+        'linear-gradient(135deg,#11998e 0%,#38ef7d 100%)',
+        'linear-gradient(135deg,#f5af19 0%,#f12711 100%)',
     ];
-    
-    events.forEach((event, index) => {
-        const eventCard = document.createElement('div');
-        eventCard.className = 'event-card';
-        eventCard.setAttribute('data-category', event.kategori || 'workshop');
-        eventCard.setAttribute('data-aos', 'fade-up');
-        
-        const gradient = gradients[index % gradients.length];
+
+    events.forEach((event, idx) => {
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.setAttribute('data-category', event.kategori || 'workshop');
+        card.setAttribute('data-aos', 'fade-up');
+        card.setAttribute('data-testid', `event-card-${event.id}`);
+
         const dateObj = new Date(event.tanggal + 'T00:00:00');
         const day = dateObj.getDate();
         const month = dateObj.toLocaleDateString('id-ID', { month: 'short' }).toUpperCase();
-        
-        const eventHTML = `
-            <div class="event-image" style="background: ${gradient};">
+        const gradient = gradients[idx % gradients.length];
+        const imageBg = event.poster
+            ? `background:url('${event.poster}') center/cover;`
+            : `background:${gradient};`;
+        const kuota = parseInt(event.kuota_peserta || 0);
+        const terisi = parseInt(event.terisi || 0);
+        const sisa = Math.max(0, kuota - terisi);
+        const full = sisa <= 0;
+
+        card.innerHTML = `
+            <div class="event-image" style="${imageBg}">
                 <span class="event-category">${capitalizeFirst(event.kategori || 'Event')}</span>
                 <div class="event-date-badge">
                     <span class="date-day">${day}</span>
@@ -155,270 +103,149 @@ function renderEventCards(events) {
             </div>
             <div class="event-content">
                 <h3>${event.judul}</h3>
-                <p class="event-meta">
-                    <i class="fas fa-map-marker-alt"></i> ${event.lokasi || 'Lokasi TBD'}
+                <p class="event-meta"><i class="fas fa-map-marker-alt"></i> ${event.lokasi || 'Lokasi TBD'}</p>
+                <p class="event-description">${event.deskripsi || ''}</p>
+                <p class="event-meta" style="font-size:.85rem;color:#4A6D2C;font-weight:600;">
+                    <i class="fas fa-users"></i> Kuota: ${terisi}/${kuota} ${full ? '<span style="color:#c0392b;">(Penuh)</span>' : `(${sisa} tersisa)`}
                 </p>
-                <p class="event-description">${event.deskripsi || 'Deskripsi event tersedia di halaman detail'}</p>
                 <div class="event-footer">
-                    <span class="event-time">
-                        <i class="fas fa-clock"></i> ${formatTime(event.waktu)}
-                    </span>
-                    <button class="btn btn-primary btn-sm register-btn" data-event-id="${event.id}" onclick="openRegistrationModal(${event.id}, '${event.judul}')">Daftar</button>
+                    <span class="event-time"><i class="fas fa-clock"></i> ${formatTime(event.waktu)}</span>
+                    <button class="btn btn-primary btn-sm register-btn" data-testid="register-btn-${event.id}"
+                        ${full ? 'disabled style="opacity:.5;cursor:not-allowed;"' : ''}
+                        onclick="openRegistrationModal(${event.id}, ${JSON.stringify(event.judul).replace(/"/g, '&quot;')})">
+                        ${full ? 'Penuh' : 'Daftar'}
+                    </button>
                 </div>
             </div>
         `;
-        
-        eventCard.innerHTML = eventHTML;
-        eventsGrid.appendChild(eventCard);
+        grid.appendChild(card);
     });
-    
-    // Re-initialize AOS if available
-    if (window.AOS) {
-        AOS.refresh();
-    }
+
+    if (window.AOS) AOS.refresh();
 }
 
-function setupFilterButtons(events) {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    if (filterButtons.length === 0) return;
-    
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const filter = button.getAttribute('data-filter');
-            
-            // Update active button
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            // Filter and display events
-            const filteredEvents = filter === 'all' 
-                ? events 
-                : events.filter(e => e.kategori === filter);
-            
-            filterEventCards(filter);
+function setupFilterButtons() {
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            applyAllFilters();
         });
     });
-}
 
-function filterEventCards(category) {
-    const eventCards = document.querySelectorAll('.event-card');
-    
-    eventCards.forEach(card => {
-        if (category === 'all' || card.getAttribute('data-category') === category) {
-            card.style.display = '';
-            setTimeout(() => card.style.opacity = '1', 10);
-        } else {
-            card.style.display = 'none';
-            card.style.opacity = '0';
-        }
+    // Date range filter
+    const apply = document.getElementById('applyDateFilter');
+    const clear = document.getElementById('clearDateFilter');
+    if (apply) apply.addEventListener('click', applyAllFilters);
+    if (clear) clear.addEventListener('click', () => {
+        document.getElementById('filterFrom').value = '';
+        document.getElementById('filterTo').value = '';
+        applyAllFilters();
     });
 }
 
-function capitalizeFirst(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+function applyAllFilters() {
+    const activeKat = document.querySelector('.filter-btn.active')?.getAttribute('data-filter') || 'all';
+    const from = document.getElementById('filterFrom')?.value || '';
+    const to = document.getElementById('filterTo')?.value || '';
+
+    let filtered = allEventsData.slice();
+    if (activeKat !== 'all') filtered = filtered.filter(e => e.kategori === activeKat);
+    if (from) filtered = filtered.filter(e => e.tanggal >= from);
+    if (to) filtered = filtered.filter(e => e.tanggal <= to);
+
+    renderEventCards(filtered);
 }
 
-function formatTime(timeStr) {
-    if (!timeStr) return '-';
-    const [hours, minutes] = timeStr.split(':');
-    return `${hours}:${minutes}`;
-}
+function capitalizeFirst(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : ''; }
+function formatTime(t) { if (!t) return '-'; const [h, m] = t.split(':'); return `${h}:${m}`; }
 
-// Registration Modal Functions
-let registrationModal = null;
-let currentRegistrationEventId = null;
+// ========= Registration Modal =========
+let currentEventId = null;
 
-// Create and insert registration modal
 function initializeRegistrationModal() {
-    if (registrationModal) return;
-    
-    const modalHTML = `
-    <div id="registrationModal" class="modal">
+    if (document.getElementById('registrationModal')) return;
+    const html = `
+    <div id="registrationModal" class="modal" data-testid="registration-modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Daftar Event</h2>
-                <button type="button" class="modal-close" aria-label="Close modal" onclick="closeRegistrationModal()">
-                    <i class="fas fa-times"></i>
-                </button>
+                <h2 id="regModalTitle">Daftar Event</h2>
+                <button type="button" class="modal-close" onclick="closeRegistrationModal()" data-testid="close-reg-modal"><i class="fas fa-times"></i></button>
             </div>
-            
-            <form id="registrationForm" class="registration-form" onsubmit="handleRegistration(event)">
-                <div class="form-group">
-                    <label for="regNama">Nama Lengkap <span class="required">*</span></label>
-                    <input 
-                        type="text" 
-                        id="regNama" 
-                        name="nama"
-                        placeholder="Masukkan nama lengkap Anda"
-                        required
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="regEmail">Email <span class="required">*</span></label>
-                    <input 
-                        type="email" 
-                        id="regEmail" 
-                        name="email"
-                        placeholder="Masukkan email Anda"
-                        required
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="regNoHP">No HP/WhatsApp <span class="required">*</span></label>
-                    <input 
-                        type="tel" 
-                        id="regNoHP" 
-                        name="no_hp"
-                        placeholder="Masukkan nomor telepon (misal: 08123456789)"
-                        required
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="regInstitusi">Asal Institusi</label>
-                    <input 
-                        type="text" 
-                        id="regInstitusi" 
-                        name="asal_institusi"
-                        placeholder="Masukkan nama institusi/sekolah/universitas Anda (opsional)"
-                    >
-                </div>
-                
-                <div class="form-group">
-                    <label for="regAlasan">Alasan Mendaftar</label>
-                    <textarea 
-                        id="regAlasan" 
-                        name="alasan_mendaftar"
-                        placeholder="Jelaskan alasan Anda ingin mengikuti event ini (opsional)"
-                        rows="4"
-                    ></textarea>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" onclick="closeRegistrationModal()">Batalkan</button>
-                    <button type="submit" class="btn btn-primary">Daftar Sekarang</button>
-                </div>
-            </form>
+            <div id="regModalBody" class="modal-body" style="padding:24px;"></div>
         </div>
-    </div>
-    `;
-    
-    // Insert modal before closing body tag
-    const body = document.body;
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = modalHTML;
-    body.appendChild(tempDiv.firstElementChild);
-    
-    registrationModal = document.getElementById('registrationModal');
+    </div>`;
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    document.body.appendChild(div.firstElementChild);
+    const modal = document.getElementById('registrationModal');
+    modal.addEventListener('click', e => { if (e.target === modal) closeRegistrationModal(); });
 }
 
-// Open registration modal
 function openRegistrationModal(eventId, eventTitle) {
-    if (!registrationModal) {
-        initializeRegistrationModal();
-    }
-    
-    currentRegistrationEventId = eventId;
-    document.querySelector('#registrationModal .modal-header h2').textContent = `Daftar: ${eventTitle}`;
-    document.getElementById('registrationForm').reset();
-    registrationModal.classList.add('active');
-}
-
-// Close registration modal
-function closeRegistrationModal() {
-    if (registrationModal) {
-        registrationModal.classList.remove('active');
-        currentRegistrationEventId = null;
-    }
-}
-
-// Handle registration form submission
-function handleRegistration(e) {
-    e.preventDefault();
-    
-    const nama = document.getElementById('regNama').value.trim();
-    const email = document.getElementById('regEmail').value.trim();
-    const no_hp = document.getElementById('regNoHP').value.trim();
-    const asal_institusi = document.getElementById('regInstitusi').value.trim();
-    const alasan_mendaftar = document.getElementById('regAlasan').value.trim();
-    
-    if (!nama || !email || !no_hp) {
-        showRegistrationToast('Mohon isi semua field yang wajib diisi', 'error');
-        return;
-    }
-    
-    // Validate email format
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-        showRegistrationToast('Format email tidak valid', 'error');
-        return;
-    }
-    
-    // Create registration object
-    const registration = {
-        id: Date.now(),
-        event_id: currentRegistrationEventId,
-        nama: nama,
-        email: email,
-        no_hp: no_hp,
-        asal_institusi: asal_institusi,
-        alasan_mendaftar: alasan_mendaftar,
-        status: 'pending',
-        created_at: new Date().toISOString()
-    };
-    
-    // Save registration to localStorage
-    const savedRegistrations = localStorage.getItem('ikram_registrations');
-    const registrations = savedRegistrations ? JSON.parse(savedRegistrations) : [];
-    
-    // Check if user already registered for this event
-    const alreadyRegistered = registrations.some(r => r.event_id === currentRegistrationEventId && r.email === email);
-    if (alreadyRegistered) {
-        showRegistrationToast('Anda sudah mendaftar untuk event ini', 'error');
-        return;
-    }
-    
-    registrations.push(registration);
-    localStorage.setItem('ikram_registrations', JSON.stringify(registrations));
-    
-    showRegistrationToast('Pendaftaran berhasil! Admin akan meninjau permintaan Anda dalam waktu singkat', 'success');
-    closeRegistrationModal();
-    
-    console.log('[v0] Registration created:', registration);
-}
-
-// Show toast notification for registration
-function showRegistrationToast(message, type = 'info') {
-    // Create toast element if it doesn't exist
-    let toast = document.getElementById('registrationToast');
-    if (!toast) {
-        toast = document.createElement('div');
-        toast.id = 'registrationToast';
-        toast.className = 'registration-toast';
-        document.body.appendChild(toast);
-    }
-    
-    toast.textContent = message;
-    toast.className = `registration-toast ${type} show`;
-    
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 3000);
-}
-
-// Close modal when clicking outside
-document.addEventListener('DOMContentLoaded', () => {
-    // Initialize modal
     initializeRegistrationModal();
-    
-    // Close modal when clicking outside
-    if (registrationModal) {
-        registrationModal.addEventListener('click', (e) => {
-            if (e.target === registrationModal) {
-                closeRegistrationModal();
-            }
-        });
+    currentEventId = eventId;
+    document.getElementById('regModalTitle').textContent = `Daftar: ${eventTitle}`;
+    const body = document.getElementById('regModalBody');
+
+    if (!currentUserSession) {
+        body.innerHTML = `
+            <div style="text-align:center;padding:20px;">
+                <i class="fas fa-user-lock" style="font-size:3rem;color:#8FA35F;margin-bottom:14px;"></i>
+                <h3 style="margin:0 0 8px;">Login Diperlukan</h3>
+                <p style="color:#666;margin:0 0 22px;">Kamu harus punya akun untuk mendaftar event ini.</p>
+                <div style="display:flex;gap:10px;justify-content:center;">
+                    <a href="login.html" class="btn btn-primary" data-testid="modal-login-link" style="background:#4A6D2C;color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;">Login</a>
+                    <a href="register.html" class="btn" data-testid="modal-register-link" style="background:#f0f3e9;color:#2D4620;padding:10px 20px;border-radius:8px;text-decoration:none;">Daftar Akun</a>
+                </div>
+            </div>`;
+    } else {
+        body.innerHTML = `
+            <p style="color:#666;margin:0 0 16px;">Halo <b>${currentUserSession.nama}</b>, isi alasan kamu mendaftar event ini:</p>
+            <form id="quickRegForm" onsubmit="submitRegistration(event)">
+                <div class="form-group" style="margin-bottom:16px;">
+                    <label style="display:block;font-weight:600;margin-bottom:6px;color:#2D4620;">Alasan Mendaftar (opsional)</label>
+                    <textarea name="alasan_mendaftar" rows="4" placeholder="Cerita kenapa kamu tertarik..." data-testid="reg-alasan-input"
+                        style="width:100%;padding:10px;border:1.5px solid #e3e7da;border-radius:8px;font-family:inherit;resize:vertical;"></textarea>
+                </div>
+                <div style="display:flex;gap:10px;justify-content:flex-end;">
+                    <button type="button" onclick="closeRegistrationModal()" style="padding:10px 18px;border:1.5px solid #ddd;background:#fff;border-radius:8px;cursor:pointer;font-family:inherit;">Batal</button>
+                    <button type="submit" data-testid="submit-registration" style="padding:10px 22px;background:#4A6D2C;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-weight:600;">Kirim Pendaftaran</button>
+                </div>
+                <div id="regResult" style="margin-top:14px;"></div>
+            </form>`;
     }
-});
+    document.getElementById('registrationModal').classList.add('active');
+}
+
+function closeRegistrationModal() {
+    const modal = document.getElementById('registrationModal');
+    if (modal) modal.classList.remove('active');
+    currentEventId = null;
+}
+
+async function submitRegistration(e) {
+    e.preventDefault();
+    const form = e.target;
+    const fd = new FormData(form);
+    fd.append('action', 'register');
+    fd.append('event_id', currentEventId);
+    const resBox = document.getElementById('regResult');
+    resBox.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+
+    try {
+        const res = await fetch('api/registrations.php', { method: 'POST', body: fd, credentials: 'include' });
+        const data = await res.json();
+        if (data.success) {
+            resBox.innerHTML = `<div style="background:#e6f6e0;color:#2D4620;padding:12px;border-radius:8px;">✓ ${data.message}</div>`;
+            setTimeout(() => {
+                closeRegistrationModal();
+                loadEventsForDisplay();
+            }, 1500);
+        } else {
+            resBox.innerHTML = `<div style="background:#fde8e8;color:#8b1a1a;padding:12px;border-radius:8px;">${data.message}</div>`;
+        }
+    } catch (err) {
+        resBox.innerHTML = `<div style="background:#fde8e8;color:#8b1a1a;padding:12px;border-radius:8px;">Error: ${err.message}</div>`;
+    }
+}
