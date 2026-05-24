@@ -17,9 +17,13 @@ if ($method === 'POST') {
             sendResponse(false, 'Username dan password harus diisi');
         }
         
-        // Query to get admin user
-        $stmt = $conn->prepare("SELECT id, username, password FROM admin_users WHERE username = ?");
+    
+        // Query to get user (role-based)
+        // Table `users`: email, password, role
+        $stmt = $conn->prepare("SELECT id, nama, email, password, role FROM users WHERE email = ? LIMIT 1");
         $stmt->bind_param("s", $username);
+
+
         $stmt->execute();
         $result = $stmt->get_result();
         
@@ -29,12 +33,22 @@ if ($method === 'POST') {
             // Verify password
             if (password_verify($password, $user['password'])) {
                 $_SESSION['admin_id'] = $user['id'];
-                $_SESSION['admin_username'] = $user['username'];
-                
+                $_SESSION['admin_username'] = $user['nama'] ?? $user['email'];
+
+                // Only admin role can access admin endpoints
+                if (($user['role'] ?? '') !== 'admin') {
+                    // Do not set auth session
+                    unset($_SESSION['admin_id'], $_SESSION['admin_username']);
+                    // This keeps session empty; admin endpoints will deny.
+                    sendResponse(false, 'Forbidden - not admin');
+                }
+
                 sendResponse(true, 'Login berhasil', [
                     'admin_id' => $user['id'],
-                    'username' => $user['username']
+                    'username' => $_SESSION['admin_username']
                 ]);
+
+
             } else {
                 sendResponse(false, 'Password salah');
             }
