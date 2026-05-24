@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 require_once 'config.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
-$action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : '';
+$action = isset($_GET['action']) ? validateInput($_GET['action']) : (isset($_POST['action']) ? validateInput($_POST['action']) : '');
 
 // GET - Fetch registrations
 if ($method === 'GET') {
@@ -57,13 +57,13 @@ if ($method === 'GET') {
     }
     else if ($action === 'user') {
         // Get user's registrations (by email)
-        $email = isset($_GET['email']) ? sanitizeInput($_GET['email']) : '';
+        $email = isset($_GET['email']) ? validateInput($_GET['email']) : '';
         
         if (empty($email)) {
             sendResponse(false, 'Email harus diisi');
         }
         
-        $sql = "SELECT r.*, e.judul as event_judul, e.tanggal, e.waktu, e.lokasi, e.kategori 
+        $sql = "SELECT r.*, e.judul as event_judul, e.tanggal, e.waktu, e.lokasi, e.kategori, e.poster
                 FROM registrations r 
                 LEFT JOIN events e ON r.event_id = e.id 
                 WHERE r.email = ? 
@@ -71,6 +71,33 @@ if ($method === 'GET') {
         
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $registrations = [];
+        while ($row = $result->fetch_assoc()) {
+            $registrations[] = $row;
+        }
+        
+        sendResponse(true, 'User registrations retrieved successfully', $registrations);
+        $stmt->close();
+    }
+    else if ($action === 'mine') {
+        // Get current logged-in user's registrations
+        if (!isset($_SESSION['user_id']) || empty($_SESSION['user_id'])) {
+            sendResponse(false, 'Not authenticated');
+        }
+        
+        $user_id = $_SESSION['user_id'];
+        
+        $sql = "SELECT r.*, e.judul as event_judul, e.tanggal, e.waktu, e.lokasi, e.kategori, e.poster
+                FROM registrations r 
+                LEFT JOIN events e ON r.event_id = e.id 
+                WHERE r.user_id = ? 
+                ORDER BY r.created_at DESC";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->bind_param("i", $user_id);
         $stmt->execute();
         $result = $stmt->get_result();
         
@@ -92,15 +119,41 @@ else if ($method === 'POST') {
     if ($action === 'register') {
         // User registering for an event
         $event_id = isset($_POST['event_id']) ? (int)$_POST['event_id'] : 0;
-        $nama = isset($_POST['nama']) ? sanitizeInput($_POST['nama']) : '';
-        $email = isset($_POST['email']) ? sanitizeInput($_POST['email']) : '';
-        $no_hp = isset($_POST['no_hp']) ? sanitizeInput($_POST['no_hp']) : '';
-        $asal_institusi = isset($_POST['asal_institusi']) ? sanitizeInput($_POST['asal_institusi']) : '';
-        $alasan_mendaftar = isset($_POST['alasan_mendaftar']) ? sanitizeInput($_POST['alasan_mendaftar']) : '';
+        $alasan_mendaftar = isset($_POST['alasan_mendaftar']) ? validateInput($_POST['alasan_mendaftar']) : '';
         
-        // Validation
-        if (empty($event_id) || empty($nama) || empty($email) || empty($no_hp)) {
-            sendResponse(false, 'Event ID, nama, email, dan no HP harus diisi');
+        // Check if user is logged in
+        if (isset($_SESSION['user_id']) && !empty($_SESSION['user_id'])) {
+            // Logged-in user - use their info
+            $user_id = $_SESSION['user_id'];
+            $nama = $_SESSION['user_nama'];
+            $email = $_SESSION['user_email'];
+            
+            // Get user's phone number from database
+            $userStmt = $conn->prepare("SELECT no_hp, asal_institusi FROM users WHERE id = ?");
+            $userStmt->bind_param("i", $user_id);
+            $userStmt->execute();
+            $userResult = $userStmt->get_result();
+            $userData = $userResult->fetch_assoc();
+            $userStmt->close();
+            
+            $no_hp = $userData['no_hp'];
+            $asal_institusi = $userData['asal_institusi'];
+        } else {
+            // Guest user - get from POST
+            $nama = isset($_POST['nama']) ? validateInput($_POST['nama']) : '';
+            $email = isset($_POST['email']) ? validateInput($_POST['email']) : '';
+            $no_hp = isset($_POST['no_hp']) ? validateInput($_POST['no_hp']) : '';
+            $asal_institusi = isset($_POST['asal_institusi']) ? validateInput($_POST['asal_institusi']) : '';
+            $user_id = null;
+            
+            // Validation
+            if (empty($event_id) || empty($nama) || empty($email) || empty($no_hp)) {
+                sendResponse(false, 'Event ID, nama, email, dan no HP harus diisi');
+            }
+        }
+        
+        if (empty($event_id)) {
+            sendResponse(false, 'Event ID harus diisi');
         }
         
         // Check if user already registered for this event
@@ -117,9 +170,15 @@ else if ($method === 'POST') {
             $checkStmt->close();
             
             // Insert registration
-            $stmt = $conn->prepare("INSERT INTO registrations (event_id, nama, email, no_hp, asal_institusi, alasan_mendaftar) 
-                                    VALUES (?, ?, ?, ?, ?, ?)");
-            $stmt->bind_param("isssss", $event_id, $nama, $email, $no_hp, $asal_institusi, $alasan_mendaftar);
+            if ($user_id !== null) {
+                $stmt = $conn->prepare("INSERT INTO registrations (event_id, user_id, nama, email, no_hp, asal_institusi, alasan_mendaftar) 
+                                        VALUES (?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("iisssss", $event_id, $user_id, $nama, $email, $no_hp, $asal_institusi, $alasan_mendaftar);
+            } else {
+                $stmt = $conn->prepare("INSERT INTO registrations (event_id, nama, email, no_hp, asal_institusi, alasan_mendaftar) 
+                                        VALUES (?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("isssss", $event_id, $nama, $email, $no_hp, $asal_institusi, $alasan_mendaftar);
+            }
             
             if ($stmt->execute()) {
                 $registration_id = $stmt->insert_id;

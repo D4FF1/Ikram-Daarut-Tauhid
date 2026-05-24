@@ -57,10 +57,29 @@ if ($conn->query($createEventsTableSQL) === TRUE) {
     echo "Error creating events table: " . $conn->error;
 }
 
+// Create users table (for user authentication)
+$createUsersTableSQL = "CREATE TABLE IF NOT EXISTS users (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    nama VARCHAR(255) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    no_hp VARCHAR(20) NOT NULL,
+    asal_institusi VARCHAR(255),
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+)";
+
+if ($conn->query($createUsersTableSQL) === TRUE) {
+    echo "users table created successfully<br>";
+} else {
+    echo "Error creating users table: " . $conn->error;
+}
+
 // Create registrations table
 $createRegistrationsTableSQL = "CREATE TABLE IF NOT EXISTS registrations (
     id INT PRIMARY KEY AUTO_INCREMENT,
     event_id INT NOT NULL,
+    user_id INT,
     nama VARCHAR(255) NOT NULL,
     email VARCHAR(255) NOT NULL,
     no_hp VARCHAR(20) NOT NULL,
@@ -70,6 +89,7 @@ $createRegistrationsTableSQL = "CREATE TABLE IF NOT EXISTS registrations (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL,
     UNIQUE KEY unique_registration (event_id, email)
 )";
 
@@ -95,6 +115,24 @@ if ($result->num_rows == 0) {
     }
 } else {
     echo "Admin user already exists<br>";
+}
+
+// Create notifications table
+$createNotificationsTableSQL = "CREATE TABLE IF NOT EXISTS notifications (
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    message TEXT,
+    type ENUM('info', 'success', 'rejected') DEFAULT 'info',
+    is_read TINYINT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+)";
+
+if ($conn->query($createNotificationsTableSQL) === TRUE) {
+    echo "notifications table created successfully<br>";
+} else {
+    echo "Error creating notifications table: " . $conn->error;
 }
 
 echo "Database setup completed!<br>";
