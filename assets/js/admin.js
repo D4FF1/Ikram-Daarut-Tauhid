@@ -1,4 +1,4 @@
-// Admin Panel JavaScript
+// Admin Panel JavaScript - Connected to MySQL Backend
 
 // DOM Elements
 const loginSection = document.getElementById('loginSection');
@@ -14,6 +14,7 @@ const confirmCancelBtn = document.getElementById('confirmCancelBtn');
 const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
 const modalClose = document.querySelector('.modal-close');
 const eventsTableBody = document.getElementById('eventsTableBody');
+const registrationsTableBody = document.getElementById('registrationsTableBody');
 const adminName = document.getElementById('adminName');
 const userBadge = document.getElementById('userBadge');
 const sidebarToggle = document.getElementById('sidebarToggle');
@@ -34,15 +35,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Check authentication
 function checkAuth() {
-    // Simulate checking auth from PHP session
-    const isLoggedIn = sessionStorage.getItem('admin_logged_in') === 'true';
-    
-    if (isLoggedIn) {
-        const adminUsername = sessionStorage.getItem('admin_username');
-        showDashboard(adminUsername);
-    } else {
-        showLogin();
-    }
+    fetch('api/admin_auth.php?action=me')
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showDashboard(data.data);
+            } else {
+                showLogin();
+            }
+        })
+        .catch(() => showLogin());
 }
 
 // Show login section
@@ -52,11 +54,11 @@ function showLogin() {
 }
 
 // Show dashboard section
-function showDashboard(username) {
+function showDashboard(adminData) {
     loginSection.classList.remove('active');
     dashboardSection.style.display = 'grid';
-    adminName.textContent = username;
-    userBadge.textContent = username;
+    adminName.textContent = adminData.nama;
+    userBadge.textContent = adminData.nama;
     loadEvents();
     loadRegistrations();
     updateStats();
@@ -77,24 +79,40 @@ function setupEventListeners() {
     logoutBtn.addEventListener('click', handleLogout);
     
     // Add event button
-    addEventBtn.addEventListener('click', openAddEventModal);
+    if (addEventBtn) {
+        addEventBtn.addEventListener('click', openAddEventModal);
+    }
     
     // Event form
-    eventForm.addEventListener('submit', handleSaveEvent);
-    cancelBtn.addEventListener('click', closeEventModal);
-    modalClose.addEventListener('click', closeEventModal);
+    if (eventForm) {
+        eventForm.addEventListener('submit', handleSaveEvent);
+    }
+    if (cancelBtn) {
+        cancelBtn.addEventListener('click', closeEventModal);
+    }
+    if (modalClose) {
+        modalClose.addEventListener('click', closeEventModal);
+    }
     
     // Confirm delete
-    confirmDeleteBtn.addEventListener('click', handleDeleteEvent);
-    confirmCancelBtn.addEventListener('click', closeConfirmModal);
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', handleDeleteEvent);
+    }
+    if (confirmCancelBtn) {
+        confirmCancelBtn.addEventListener('click', closeConfirmModal);
+    }
     
     // Click outside modal to close
-    eventModal.addEventListener('click', (e) => {
-        if (e.target === eventModal) closeEventModal();
-    });
-    confirmModal.addEventListener('click', (e) => {
-        if (e.target === confirmModal) closeConfirmModal();
-    });
+    if (eventModal) {
+        eventModal.addEventListener('click', (e) => {
+            if (e.target === eventModal) closeEventModal();
+        });
+    }
+    if (confirmModal) {
+        confirmModal.addEventListener('click', (e) => {
+            if (e.target === confirmModal) closeConfirmModal();
+        });
+    }
     
     // Navigation items
     navItems.forEach(item => {
@@ -106,48 +124,478 @@ function setupEventListeners() {
     });
     
     // Mobile menu toggle
-    mobileMenuToggle.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
-    });
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+    }
     
     // Sidebar toggle
-    sidebarToggle.addEventListener('click', () => {
-        sidebar.classList.remove('active');
-    });
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+        });
+    }
 }
 
-// Handle login
+// Handle login with backend
 async function handleLogin(e) {
     e.preventDefault();
     
-    const username = document.getElementById('username').value;
+    const email = document.getElementById('username').value; // Changed to use email
     const password = document.getElementById('password').value;
     
-    // For demo, we'll simulate login
-    // In production, this should validate against the PHP backend
-    if (username === 'admin' && password === 'admin123') {
-        sessionStorage.setItem('admin_logged_in', 'true');
-        sessionStorage.setItem('admin_username', username);
+    const fd = new FormData();
+    fd.append('action', 'login');
+    fd.append('email', email);
+    fd.append('password', password);
+    
+    try {
+        const res = await fetch('api/admin_auth.php', { method: 'POST', body: fd });
+        const data = await res.json();
         
-        // Reset form
-        loginForm.reset();
-        
-        // Show dashboard
-        showDashboard(username);
-        
-        showToast('Login berhasil!', 'success');
-    } else {
-        showToast('Username atau password salah', 'error');
+        if (data.success) {
+            showToast('Login berhasil!', 'success');
+            showDashboard(data.data);
+            loginForm.reset();
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (err) {
+        showToast('Gagal login: ' + err.message, 'error');
     }
 }
 
 // Handle logout
-function handleLogout() {
+async function handleLogout() {
     if (confirm('Apakah Anda yakin ingin logout?')) {
-        sessionStorage.removeItem('admin_logged_in');
-        sessionStorage.removeItem('admin_username');
-        showLogin();
-        loginForm.reset();
+        try {
+            const res = await fetch('api/admin_auth.php', {
+                method: 'POST',
+                body: new FormData(Object.assign(document.createElement('form'), {
+                    elements: { action: { value: 'logout' } }
+                })),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+            
+            // Simpler logout
+            await fetch('api/admin_auth.php?action=logout');
+            showLogin();
+            loginForm.reset();
+            showToast('Logout berhasil', 'success');
+        } catch (err) {
+            showToast('Gagal logout: ' + err.message, 'error');
+        }
+    }
+}
+
+// Load events from backend
+async function loadEvents() {
+    try {
+        const res = await fetch('api/events.php');
+        const data = await res.json();
+        
+        if (data.success) {
+            allEvents = data.data;
+        } else {
+            allEvents = [];
+        }
+        renderEventsTable();
+    } catch (err) {
+        console.error('Error loading events:', err);
+        showToast('Gagal memuat events', 'error');
+    }
+}
+
+// Load registrations from backend
+async function loadRegistrations() {
+    try {
+        const res = await fetch('api/registrations.php?action=all');
+        const data = await res.json();
+        
+        if (data.success) {
+            allRegistrations = data.data;
+        } else {
+            allRegistrations = [];
+        }
+        renderRegistrationsTable();
+    } catch (err) {
+        console.error('Error loading registrations:', err);
+    }
+}
+
+// Render events table
+function renderEventsTable() {
+    if (!eventsTableBody) return;
+    
+    if (allEvents.length === 0) {
+        eventsTableBody.innerHTML = '<tr><td colspan="7" class="text-center">Tidak ada event</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    allEvents.forEach((event, index) => {
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${event.judul}</td>
+                <td>${formatDate(event.tanggal)}</td>
+                <td>${event.waktu}</td>
+                <td>${event.lokasi || '-'}</td>
+                <td>
+                    <span class="badge badge-${event.kategori || 'default'}">
+                        ${event.kategori || 'N/A'}
+                    </span>
+                </td>
+                <td class="actions">
+                    <button class="btn-icon edit" onclick="openEditEventModal(${event.id})" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn-icon delete" onclick="openConfirmDelete(${event.id}, '${event.judul}')" title="Hapus">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+    eventsTableBody.innerHTML = html;
+}
+
+// Render registrations table
+function renderRegistrationsTable() {
+    if (!registrationsTableBody) return;
+    
+    if (allRegistrations.length === 0) {
+        registrationsTableBody.innerHTML = '<tr><td colspan="8" class="text-center">Tidak ada registrasi</td></tr>';
+        return;
+    }
+    
+    let html = '';
+    allRegistrations.forEach((reg, index) => {
+        const badgeClass = reg.status === 'pending' ? 'warning' : (reg.status === 'approved' ? 'success' : 'danger');
+        html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${reg.nama}</td>
+                <td>${reg.email}</td>
+                <td>${reg.no_hp}</td>
+                <td>${reg.event_judul}</td>
+                <td>
+                    <span class="badge badge-${badgeClass}">${reg.status}</span>
+                </td>
+                <td>${formatDate(reg.created_at)}</td>
+                <td class="actions">
+                    ${reg.status === 'pending' ? `
+                        <button class="btn-icon approve" onclick="approveRegistration(${reg.id})" title="Setujui">
+                            <i class="fas fa-check"></i>
+                        </button>
+                        <button class="btn-icon reject" onclick="rejectRegistration(${reg.id})" title="Tolak">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    ` : ''}
+                </td>
+            </tr>
+        `;
+    });
+    registrationsTableBody.innerHTML = html;
+}
+
+// Update statistics
+function updateStats() {
+    const totalEventsEl = document.getElementById('totalEvents');
+    const upcomingEventsEl = document.getElementById('upcomingEvents');
+    const pendingRegistrationsEl = document.getElementById('pendingRegistrations');
+    const registrationBadge = document.getElementById('registrationBadge');
+    
+    if (totalEventsEl) {
+        const today = new Date().toISOString().split('T')[0];
+        const upcomingCount = allEvents.filter(e => e.tanggal >= today).length;
+        const pendingCount = allRegistrations.filter(r => r.status === 'pending').length;
+        
+        totalEventsEl.textContent = allEvents.length;
+        if (upcomingEventsEl) upcomingEventsEl.textContent = upcomingCount;
+        if (pendingRegistrationsEl) pendingRegistrationsEl.textContent = pendingCount;
+        if (registrationBadge) registrationBadge.textContent = pendingCount;
+    }
+}
+
+// Open add event modal
+function openAddEventModal() {
+    if (!eventModal || !eventForm) return;
+    
+    currentEditingEventId = null;
+    eventForm.reset();
+    document.getElementById('eventId').value = '';
+    document.getElementById('modalTitle').textContent = 'Tambah Event Baru';
+    document.getElementById('submitBtn').textContent = 'Tambah Event';
+    eventModal.classList.add('active');
+}
+
+// Open edit event modal
+function openEditEventModal(eventId) {
+    if (!eventModal || !eventForm) return;
+    
+    const event = allEvents.find(e => e.id === eventId);
+    if (!event) return;
+    
+    currentEditingEventId = eventId;
+    document.getElementById('eventId').value = event.id;
+    document.getElementById('eventJudul').value = event.judul;
+    document.getElementById('eventTanggal').value = event.tanggal;
+    document.getElementById('eventWaktu').value = event.waktu;
+    document.getElementById('eventLokasi').value = event.lokasi || '';
+    document.getElementById('eventKategori').value = event.kategori || '';
+    document.getElementById('eventDeskripsi').value = event.deskripsi || '';
+    
+    document.getElementById('modalTitle').textContent = 'Edit Event';
+    document.getElementById('submitBtn').textContent = 'Perbarui Event';
+    eventModal.classList.add('active');
+}
+
+// Close event modal
+function closeEventModal() {
+    if (!eventModal) return;
+    eventModal.classList.remove('active');
+    if (eventForm) eventForm.reset();
+    currentEditingEventId = null;
+}
+
+// Handle save event
+async function handleSaveEvent(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('eventId').value;
+    const judul = document.getElementById('eventJudul').value;
+    const deskripsi = document.getElementById('eventDeskripsi').value;
+    const tanggal = document.getElementById('eventTanggal').value;
+    const waktu = document.getElementById('eventWaktu').value;
+    const lokasi = document.getElementById('eventLokasi').value;
+    const kategori = document.getElementById('eventKategori').value;
+    
+    const fd = new FormData();
+    if (id) {
+        fd.append('id', id);
+    }
+    fd.append('judul', judul);
+    fd.append('deskripsi', deskripsi);
+    fd.append('tanggal', tanggal);
+    fd.append('waktu', waktu);
+    fd.append('lokasi', lokasi);
+    fd.append('kategori', kategori);
+    
+    try {
+        let res;
+        if (id) {
+            // Update
+            const method = 'PUT';
+            res = await fetch('api/events.php', { 
+                method, 
+                body: new URLSearchParams(fd),
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+            });
+        } else {
+            // Create
+            res = await fetch('api/events.php', { method: 'POST', body: fd });
+        }
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            showToast(id ? 'Event berhasil diperbarui' : 'Event berhasil ditambahkan', 'success');
+            closeEventModal();
+            loadEvents();
+            updateStats();
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+// Open confirm delete modal
+function openConfirmDelete(eventId, eventTitle) {
+    if (!confirmModal) return;
+    
+    currentEditingEventId = eventId;
+    document.getElementById('eventTitleConfirm').textContent = eventTitle;
+    confirmModal.classList.add('active');
+}
+
+// Close confirm modal
+function closeConfirmModal() {
+    if (!confirmModal) return;
+    confirmModal.classList.remove('active');
+}
+
+// Handle delete event
+async function handleDeleteEvent() {
+    if (!currentEditingEventId) return;
+    
+    try {
+        const res = await fetch('api/events.php', {
+            method: 'DELETE',
+            body: new URLSearchParams({ id: currentEditingEventId }),
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+        });
+        
+        const data = await res.json();
+        
+        if (data.success) {
+            showToast('Event berhasil dihapus', 'success');
+            closeConfirmModal();
+            loadEvents();
+            updateStats();
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+// Approve registration
+async function approveRegistration(registrationId) {
+    const fd = new FormData();
+    fd.append('action', 'approve');
+    fd.append('registration_id', registrationId);
+    
+    try {
+        const res = await fetch('api/registrations.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        
+        if (data.success) {
+            showToast('Registrasi disetujui', 'success');
+            loadRegistrations();
+            updateStats();
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+// Reject registration
+async function rejectRegistration(registrationId) {
+    const fd = new FormData();
+    fd.append('action', 'reject');
+    fd.append('registration_id', registrationId);
+    
+    try {
+        const res = await fetch('api/registrations.php', { method: 'POST', body: fd });
+        const data = await res.json();
+        
+        if (data.success) {
+            showToast('Registrasi ditolak', 'success');
+            loadRegistrations();
+            updateStats();
+        } else {
+            showToast(data.message, 'error');
+        }
+    } catch (err) {
+        showToast('Error: ' + err.message, 'error');
+    }
+}
+
+// Switch menu
+function switchMenu(menu) {
+    // Hide all content panels
+    document.querySelectorAll('.content-panel').forEach(panel => {
+        panel.classList.remove('active');
+    });
+    
+    // Update nav items
+    navItems.forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Show selected panel
+    const contentPanel = document.getElementById(menu + 'Content');
+    if (contentPanel) {
+        contentPanel.classList.add('active');
+    }
+    
+    // Update nav item
+    const navItem = document.querySelector(`[data-menu="${menu}"]`);
+    if (navItem) {
+        navItem.classList.add('active');
+    }
+    
+    // Update page title
+    const pageTitle = document.getElementById('pageTitle');
+    if (pageTitle) {
+        if (menu === 'dashboard') pageTitle.textContent = 'Dashboard';
+        else if (menu === 'events') pageTitle.textContent = 'Kelola Event';
+        else if (menu === 'registrations') pageTitle.textContent = 'Permintaan Registrasi';
+    }
+}
+
+// Filter registrations
+function filterRegistrations() {
+    const statusFilter = document.getElementById('registrationStatusFilter');
+    if (!statusFilter || !registrationsTableBody) return;
+    
+    const status = statusFilter.value;
+    let filtered = allRegistrations;
+    
+    if (status) {
+        filtered = allRegistrations.filter(r => r.status === status);
+    }
+    
+    let html = '';
+    if (filtered.length === 0) {
+        html = '<tr><td colspan="8" class="text-center">Tidak ada registrasi</td></tr>';
+    } else {
+        filtered.forEach((reg, index) => {
+            const badgeClass = reg.status === 'pending' ? 'warning' : (reg.status === 'approved' ? 'success' : 'danger');
+            html += `
+                <tr>
+                    <td>${index + 1}</td>
+                    <td>${reg.nama}</td>
+                    <td>${reg.email}</td>
+                    <td>${reg.no_hp}</td>
+                    <td>${reg.event_judul}</td>
+                    <td>
+                        <span class="badge badge-${badgeClass}">${reg.status}</span>
+                    </td>
+                    <td>${formatDate(reg.created_at)}</td>
+                    <td class="actions">
+                        ${reg.status === 'pending' ? `
+                            <button class="btn-icon approve" onclick="approveRegistration(${reg.id})" title="Setujui">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button class="btn-icon reject" onclick="rejectRegistration(${reg.id})" title="Tolak">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        ` : ''}
+                    </td>
+                </tr>
+            `;
+        });
+    }
+    registrationsTableBody.innerHTML = html;
+}
+
+// Format date helper
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// Show toast notification
+function showToast(message, type = 'info') {
+    const toast = document.getElementById('toast');
+    if (!toast) return;
+    
+    toast.textContent = message;
+    toast.className = `toast toast-${type} show`;
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 3000);
+}
         showToast('Logout berhasil', 'success');
     }
 }

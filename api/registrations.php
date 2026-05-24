@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 require_once 'config.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
-$action = isset($_GET['action']) ? sanitizeInput($_GET['action']) : '';
+$action = isset($_POST['action']) ? validateInput($_POST['action']) : (isset($_GET['action']) ? validateInput($_GET['action']) : '');
 
 // GET - Fetch registrations
 if ($method === 'GET') {
@@ -57,7 +57,7 @@ if ($method === 'GET') {
     }
     else if ($action === 'user') {
         // Get user's registrations (by email)
-        $email = isset($_GET['email']) ? sanitizeInput($_GET['email']) : '';
+        $email = isset($_GET['email']) ? validateInput($_GET['email']) : '';
         
         if (empty($email)) {
             sendResponse(false, 'Email harus diisi');
@@ -90,17 +90,34 @@ if ($method === 'GET') {
 // POST - Create new registration or approve/reject
 else if ($method === 'POST') {
     if ($action === 'register') {
-        // User registering for an event
+        // User registering for an event - get user info from session
+        if (!isset($_SESSION['user_email']) || empty($_SESSION['user_email'])) {
+            sendResponse(false, 'Anda harus login terlebih dahulu');
+        }
+
         $event_id = isset($_POST['event_id']) ? (int)$_POST['event_id'] : 0;
-        $nama = isset($_POST['nama']) ? sanitizeInput($_POST['nama']) : '';
-        $email = isset($_POST['email']) ? sanitizeInput($_POST['email']) : '';
-        $no_hp = isset($_POST['no_hp']) ? sanitizeInput($_POST['no_hp']) : '';
-        $asal_institusi = isset($_POST['asal_institusi']) ? sanitizeInput($_POST['asal_institusi']) : '';
-        $alasan_mendaftar = isset($_POST['alasan_mendaftar']) ? sanitizeInput($_POST['alasan_mendaftar']) : '';
+        $alasan_mendaftar = isset($_POST['alasan_mendaftar']) ? validateInput($_POST['alasan_mendaftar']) : '';
+        
+        // Get user info from session/database
+        $email = $_SESSION['user_email'];
+        $stmt = $conn->prepare('SELECT nama, no_hp, asal_institusi FROM users WHERE email = ? LIMIT 1');
+        $stmt->bind_param('s', $email);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        $user = $res ? $res->fetch_assoc() : null;
+        $stmt->close();
+
+        if (!$user) {
+            sendResponse(false, 'User tidak ditemukan');
+        }
+
+        $nama = $user['nama'];
+        $no_hp = $user['no_hp'];
+        $asal_institusi = $user['asal_institusi'];
         
         // Validation
-        if (empty($event_id) || empty($nama) || empty($email) || empty($no_hp)) {
-            sendResponse(false, 'Event ID, nama, email, dan no HP harus diisi');
+        if (empty($event_id)) {
+            sendResponse(false, 'Event ID harus diisi');
         }
         
         // Check if user already registered for this event

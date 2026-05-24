@@ -157,7 +157,7 @@
         }
 
         async function loadRegs() {
-            const res = await fetch('api/registrations.php?action=mine', { credentials: 'include' });
+            const res = await fetch('api/registrations.php?action=user', { credentials: 'include' });
             const data = await res.json();
             if (!data.success) { renderList([]); return; }
             allRegs = data.data || [];
@@ -237,48 +237,19 @@
                 document.getElementById('pf_no_hp').value = me.no_hp || '';
                 document.getElementById('pf_inst').value = me.asal_institusi || '';
                 loadRegs();
-                loadNotifications();
-                setInterval(loadNotifications, 30000); // polling tiap 30 detik
+                // loadNotifications(); // TODO: Implement notifications API
+                // setInterval(loadNotifications, 30000); // polling tiap 30 detik
             }
         })();
 
         // ===== Notifications =====
         async function loadNotifications() {
+            // TODO: Implement notifications API
             try {
-                const res = await fetch('api/notifications.php', { credentials: 'include' });
-                const data = await res.json();
-                if (!data.success) return;
-                const { items, unread } = data.data;
                 const badge = document.getElementById('notifBadge');
-                badge.textContent = unread;
-                badge.style.display = unread > 0 ? 'inline-flex' : 'none';
+                badge.style.display = 'none';
                 const list = document.getElementById('notifList');
-                if (!items.length) {
-                    list.innerHTML = '<div class="notif-empty">Belum ada notifikasi</div>';
-                    return;
-                }
-                list.innerHTML = items.map(n => {
-                    const icon = n.type === 'success' ? 'fa-check-circle' : (n.type === 'rejected' ? 'fa-times-circle' : 'fa-info-circle');
-                    const cls = n.is_read == 0 ? 'unread' : '';
-                    return `<div class="notif-item ${cls}" data-id="${n.id}" data-testid="notif-item-${n.id}">
-                        <i class="fas ${icon} notif-icon notif-${n.type}"></i>
-                        <div class="notif-body">
-                            <strong>${n.title}</strong>
-                            <p>${n.message}</p>
-                            <small>${new Date(n.created_at).toLocaleString('id-ID')}</small>
-                        </div>
-                    </div>`;
-                }).join('');
-                // Bind mark-as-read on click
-                list.querySelectorAll('.notif-item.unread').forEach(el => {
-                    el.addEventListener('click', async () => {
-                        const fd = new FormData();
-                        fd.append('action', 'mark_read');
-                        fd.append('id', el.dataset.id);
-                        await fetch('api/notifications.php', { method:'POST', body:fd, credentials:'include' });
-                        loadNotifications();
-                    });
-                });
+                list.innerHTML = '<div class="notif-empty">Notifikasi akan segera tersedia</div>';
             } catch (e) { /* silent */ }
         }
 

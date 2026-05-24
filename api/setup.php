@@ -24,32 +24,18 @@ if ($conn->query($createDbSQL) === TRUE) {
 // Select database
 $conn->select_db($dbname);
 
-// Create admin_users table
-$createAdminTableSQL = "CREATE TABLE IF NOT EXISTS admin_users (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-)";
+// Create users table with roles (admin/user)
+$createUsersTableSQL = "CREATE TABLE IF NOT EXISTS users (\n    id INT PRIMARY KEY AUTO_INCREMENT,\n    nama VARCHAR(255) NOT NULL,\n    email VARCHAR(255) UNIQUE NOT NULL,\n    no_hp VARCHAR(20) NOT NULL,\n    asal_institusi VARCHAR(255),\n    password VARCHAR(255) NOT NULL,\n    role ENUM('admin','user') DEFAULT 'user',\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n)";
 
-if ($conn->query($createAdminTableSQL) === TRUE) {
-    echo "admin_users table created successfully<br>";
+if ($conn->query($createUsersTableSQL) === TRUE) {
+    echo "users table created successfully<br>";
 } else {
-    echo "Error creating admin_users table: " . $conn->error;
+    echo "Error creating users table: " . $conn->error;
 }
 
 // Create events table
-$createEventsTableSQL = "CREATE TABLE IF NOT EXISTS events (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    judul VARCHAR(255) NOT NULL,
-    deskripsi TEXT,
-    tanggal DATE NOT NULL,
-    waktu TIME NOT NULL,
-    lokasi VARCHAR(255),
-    kategori VARCHAR(50),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-)";
+$createEventsTableSQL = "CREATE TABLE IF NOT EXISTS events (\n    id INT PRIMARY KEY AUTO_INCREMENT,\n    judul VARCHAR(255) NOT NULL,\n    deskripsi TEXT,\n    tanggal DATE NOT NULL,\n    waktu TIME NOT NULL,\n    lokasi VARCHAR(255),\n    kategori VARCHAR(50),\n    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,\n    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP\n)";
+
 
 if ($conn->query($createEventsTableSQL) === TRUE) {
     echo "events table created successfully<br>";
@@ -79,26 +65,48 @@ if ($conn->query($createRegistrationsTableSQL) === TRUE) {
     echo "Error creating registrations table: " . $conn->error;
 }
 
-// Insert default admin user (username: admin, password: admin123)
-$adminUsername = "admin";
-$adminPassword = password_hash("admin123", PASSWORD_BCRYPT);
+// Insert default admin users (2 akun)
+$admins = [
+    [
+        'nama' => 'Admin 1',
+        'email' => 'admin1@ikram.test',
+        'no_hp' => '0000000001',
+        'password' => 'admin123'
+    ],
+    [
+        'nama' => 'Admin 2',
+        'email' => 'admin2@ikram.test',
+        'no_hp' => '0000000002',
+        'password' => 'admin123'
+    ]
+];
 
-$checkAdminSQL = "SELECT id FROM admin_users WHERE username = '$adminUsername'";
-$result = $conn->query($checkAdminSQL);
+foreach ($admins as $adm) {
+    $adminEmail = $adm['email'];
+    $adminPassword = password_hash($adm['password'], PASSWORD_BCRYPT);
 
-if ($result->num_rows == 0) {
-    $insertAdminSQL = "INSERT INTO admin_users (username, password) VALUES ('$adminUsername', '$adminPassword')";
-    if ($conn->query($insertAdminSQL) === TRUE) {
-        echo "Default admin user created (username: admin, password: admin123)<br>";
+    $checkAdminSQL = "SELECT id FROM users WHERE email = '$adminEmail'";
+    $result = $conn->query($checkAdminSQL);
+
+    if ($result->num_rows == 0) {
+        $adminNama = $adm['nama'];
+        $adminNoHp = $adm['no_hp'];
+        $adminRole = 'admin';
+        $insertAdminSQL = "INSERT INTO users (nama, email, no_hp, asal_institusi, password, role) VALUES ('$adminNama', '$adminEmail', '$adminNoHp', NULL, '$adminPassword', '$adminRole')";
+        if ($conn->query($insertAdminSQL) === TRUE) {
+            echo "Default admin user created: ($adminEmail / admin123)<br>";
+        } else {
+            echo "Error creating admin user: " . $conn->error;
+        }
     } else {
-        echo "Error creating admin user: " . $conn->error;
+        echo "Admin user already exists: $adminEmail<br>";
     }
-} else {
-    echo "Admin user already exists<br>";
 }
+
 
 echo "Database setup completed!<br>";
 echo "<a href='../admin.html'>Go to Admin Panel</a>";
+
 
 $conn->close();
 ?>
