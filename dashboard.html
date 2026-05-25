@@ -146,185 +146,29 @@
     </div>
 
     <script>
-        let currentFilter = 'all';
-        let allRegs = [];
-
-        async function checkSession() {
-            const res = await fetch('api/user_auth.php?action=me', { credentials: 'include' });
-            const data = await res.json();
-            if (!data.success) { window.location.href = 'login.html'; return null; }
-            return data.data;
-        }
-
-        async function loadRegs() {
-            const res = await fetch('api/registrations.php?action=mine', { credentials: 'include' });
-            const data = await res.json();
-            if (!data.success) { renderList([]); return; }
-            allRegs = data.data || [];
-            updateStats();
-            renderList(allRegs);
-        }
-
-        function updateStats() {
-            document.getElementById('statPending').textContent = allRegs.filter(r => r.status === 'pending').length;
-            document.getElementById('statApproved').textContent = allRegs.filter(r => r.status === 'approved').length;
-            document.getElementById('statRejected').textContent = allRegs.filter(r => r.status === 'rejected').length;
-        }
-
-        function renderList(regs) {
-            const list = document.getElementById('regList');
-            const filtered = currentFilter === 'all' ? regs : regs.filter(r => r.status === currentFilter);
-            if (filtered.length === 0) {
-                list.innerHTML = `<div class="empty-state" data-testid="empty-state">
-                    <i class="fas fa-inbox"></i>
-                    <p>Belum ada pendaftaran${currentFilter !== 'all' ? ' dengan status ini' : ''}</p>
-                    <a href="event.html" class="btn-explore" data-testid="explore-events-link">Jelajahi Event</a>
-                </div>`;
-                return;
-            }
-            list.innerHTML = filtered.map(r => {
-                const statusMap = {
-                    pending: { label: 'Menunggu Review', icon: 'fa-hourglass-half', cls: 'badge-pending' },
-                    approved: { label: 'Diterima ✓', icon: 'fa-check-circle', cls: 'badge-approved' },
-                    rejected: { label: 'Ditolak', icon: 'fa-times-circle', cls: 'badge-rejected' }
-                }[r.status] || { label: r.status, icon: 'fa-question', cls: 'badge-pending' };
-                const tgl = r.tanggal ? new Date(r.tanggal + 'T00:00:00').toLocaleDateString('id-ID', {day:'numeric', month:'long', year:'numeric'}) : '-';
-                const poster = r.poster ? `<img src="${r.poster}" alt="poster" class="reg-poster">` : `<div class="reg-poster reg-poster-ph"><i class="fas fa-image"></i></div>`;
-                return `
-                <div class="reg-card" data-status="${r.status}" data-testid="reg-card-${r.id}">
-                    ${poster}
-                    <div class="reg-body">
-                        <div class="reg-top">
-                            <h3>${r.event_judul || 'Event'}</h3>
-                            <span class="reg-status ${statusMap.cls}" data-testid="reg-status-${r.id}"><i class="fas ${statusMap.icon}"></i> ${statusMap.label}</span>
-                        </div>
-                        <div class="reg-meta">
-                            <span><i class="fas fa-calendar-day"></i> ${tgl}</span>
-                            <span><i class="fas fa-clock"></i> ${r.waktu || '-'}</span>
-                            <span><i class="fas fa-map-marker-alt"></i> ${r.lokasi || '-'}</span>
-                            ${r.kategori ? `<span class="reg-kategori">${r.kategori}</span>` : ''}
-                        </div>
-                        ${r.alasan_mendaftar ? `<p class="reg-alasan"><b>Alasan:</b> ${r.alasan_mendaftar}</p>` : ''}
-                        <small class="reg-tgl">Didaftarkan: ${new Date(r.created_at).toLocaleString('id-ID')}</small>
-                    </div>
-                </div>`;
-            }).join('');
-        }
-
-        document.querySelectorAll('.dash-filter').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.dash-filter').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                currentFilter = btn.dataset.status;
-                renderList(allRegs);
-            });
-        });
-
-        document.getElementById('logoutBtn').addEventListener('click', async () => {
-            const fd = new FormData();
-            fd.append('action', 'logout');
-            await fetch('api/user_auth.php', { method: 'POST', body: fd, credentials: 'include' });
-            window.location.href = 'login.html';
-        });
-
-        (async () => {
-            const me = await checkSession();
-            if (me) {
-                document.getElementById('dashUserName').textContent = me.nama;
-                document.getElementById('welcomeName').textContent = me.nama;
-                document.getElementById('pf_nama').value = me.nama || '';
-                document.getElementById('pf_email').value = me.email || '';
-                document.getElementById('pf_no_hp').value = me.no_hp || '';
-                document.getElementById('pf_inst').value = me.asal_institusi || '';
-                loadRegs();
-                loadNotifications();
-                setInterval(loadNotifications, 30000); // polling tiap 30 detik
-            }
-        })();
-
-        // ===== Notifications =====
-        async function loadNotifications() {
+        // PHP/auth removed: dashboard becomes static/read-only.
+        document.addEventListener('DOMContentLoaded', () => {
             try {
-                const res = await fetch('api/notifications.php', { credentials: 'include' });
-                const data = await res.json();
-                if (!data.success) return;
-                const { items, unread } = data.data;
-                const badge = document.getElementById('notifBadge');
-                badge.textContent = unread;
-                badge.style.display = unread > 0 ? 'inline-flex' : 'none';
-                const list = document.getElementById('notifList');
-                if (!items.length) {
-                    list.innerHTML = '<div class="notif-empty">Belum ada notifikasi</div>';
-                    return;
-                }
-                list.innerHTML = items.map(n => {
-                    const icon = n.type === 'success' ? 'fa-check-circle' : (n.type === 'rejected' ? 'fa-times-circle' : 'fa-info-circle');
-                    const cls = n.is_read == 0 ? 'unread' : '';
-                    return `<div class="notif-item ${cls}" data-id="${n.id}" data-testid="notif-item-${n.id}">
-                        <i class="fas ${icon} notif-icon notif-${n.type}"></i>
-                        <div class="notif-body">
-                            <strong>${n.title}</strong>
-                            <p>${n.message}</p>
-                            <small>${new Date(n.created_at).toLocaleString('id-ID')}</small>
-                        </div>
+                document.getElementById('welcomeName').textContent = 'Guest';
+                document.getElementById('dashUserName').textContent = 'Guest';
+            } catch (_) {}
+
+            const regList = document.getElementById('regList');
+            if (regList) {
+                regList.innerHTML = `
+                    <div class="empty-state" style="padding:48px 20px;">
+                        <i class="fas fa-lock" style="font-size:3rem;color:#8FA35F;margin-bottom:14px;"></i>
+                        <h3 style="margin:0 0 8px;color:#2D4620;">Dashboard dinonaktifkan</h3>
+                        <p style="margin:0 0 20px;color:#666;">Semua endpoint PHP dihapus sehingga fitur dashboard & notifikasi tidak lagi tersedia.</p>
+                        <a href="event.html" class="btn-explore" data-testid="explore-events-link">Jelajahi Event</a>
                     </div>`;
-                }).join('');
-                // Bind mark-as-read on click
-                list.querySelectorAll('.notif-item.unread').forEach(el => {
-                    el.addEventListener('click', async () => {
-                        const fd = new FormData();
-                        fd.append('action', 'mark_read');
-                        fd.append('id', el.dataset.id);
-                        await fetch('api/notifications.php', { method:'POST', body:fd, credentials:'include' });
-                        loadNotifications();
-                    });
-                });
-            } catch (e) { /* silent */ }
-        }
-
-        document.getElementById('notifBtn').addEventListener('click', e => {
-            e.stopPropagation();
-            const dd = document.getElementById('notifDropdown');
-            dd.style.display = dd.style.display === 'none' ? 'block' : 'none';
-        });
-        document.addEventListener('click', e => {
-            const dd = document.getElementById('notifDropdown');
-            if (dd && !dd.contains(e.target) && !document.getElementById('notifBtn').contains(e.target)) {
-                dd.style.display = 'none';
             }
-        });
-        document.getElementById('markAllReadBtn').addEventListener('click', async () => {
-            const fd = new FormData(); fd.append('action', 'mark_all_read');
-            await fetch('api/notifications.php', { method:'POST', body:fd, credentials:'include' });
-            loadNotifications();
-        });
 
-        // ===== Profile Modal =====
-        const profileModal = document.getElementById('profileModal');
-        document.getElementById('profileBtn').addEventListener('click', () => profileModal.style.display = 'flex');
-        document.getElementById('closeProfileBtn').addEventListener('click', () => profileModal.style.display = 'none');
-        profileModal.addEventListener('click', e => { if (e.target === profileModal) profileModal.style.display = 'none'; });
-
-        document.getElementById('profileForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fd = new FormData(e.target);
-            fd.append('action', 'update_profile');
-            const res = await fetch('api/user_auth.php', { method: 'POST', body: fd, credentials: 'include' });
-            const data = await res.json();
-            const alertEl = document.getElementById('pfAlert');
-            alertEl.style.display = 'block';
-            if (data.success) {
-                alertEl.className = 'auth-alert success';
-                alertEl.textContent = 'Profil berhasil diperbarui';
-                document.getElementById('dashUserName').textContent = data.data.nama;
-                document.getElementById('welcomeName').textContent = data.data.nama;
-                document.getElementById('pf_curpass').value = '';
-                document.getElementById('pf_newpass').value = '';
-                setTimeout(() => { profileModal.style.display = 'none'; alertEl.style.display = 'none'; }, 1500);
-            } else {
-                alertEl.className = 'auth-alert error';
-                alertEl.textContent = data.message;
-            }
+            const hideIds = ['logoutBtn', 'profileBtn', 'notifBtn', 'profileModal'];
+            hideIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = 'none';
+            });
         });
     </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"7f7b0fd8732c4326aae4b9d58d5c514a","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
